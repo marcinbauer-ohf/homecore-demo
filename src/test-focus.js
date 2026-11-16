@@ -1784,7 +1784,10 @@ export function mountTestFocus(root, { config, getHass }) {
      you edit is Dashboards (the site's rail) */
   let overview = true;
   const OVERVIEW_ROOMS = ['living_room', 'kitchen', 'bedroom', 'bathroom', 'balcony', 'office'];
-  const overviewRooms = () => (prefs.areaOrder?.length ? byAreaOrder(areaRooms) : [...areaRooms].sort((a, b) => ((OVERVIEW_ROOMS.indexOf(a.id) + 1) || 99) - ((OVERVIEW_ROOMS.indexOf(b.id) + 1) || 99)));
+  // Home's areas: every one in order (Edit Home page's Areas tab lists them), and those switched on (Matt, 16 Nov: Home's
+  // own switches, apart from the dashboard's Areas card)
+  const overviewRooms = () => { const off = new Set(prefs.home?.areasOff || []); return overviewRoomsAll().filter((r) => !off.has(r.id)); };
+  const overviewRoomsAll = () => (prefs.areaOrder?.length ? byAreaOrder(areaRooms) : [...areaRooms].sort((a, b) => ((OVERVIEW_ROOMS.indexOf(a.id) + 1) || 99) - ((OVERVIEW_ROOMS.indexOf(b.id) + 1) || 99)));
   function overviewPrefs() {
     const rooms = overviewRooms().map((r) => 'room:' + r.id), cells = { favs: { col: 3, row: 0 } };
     rooms.forEach((k, i) => { cells[k] = i < 3 ? { col: i, row: 0 } : i < 6 ? { col: i - 3, row: 5 } : { col: (i - 6) % 6, row: 10 + 5 * Math.floor((i - 6) / 6) }; });
@@ -2705,7 +2708,11 @@ export function mountTestFocus(root, { config, getHass }) {
       '<span class="tfIcon"' + iconSlot('', x.icon, x.name) + '></span><span class="activityRowName">' + esc(x.name) + '</span>' + sw(sumOn(k), x.name, 'data-he-sum="' + esc(k) + '"') + '</li>'; };
     const search = homeTray.querySelector('[data-he-search]')?.value || '';
     // tabs instead of folding sections (Matt, 12 Nov: "use tabs as well"), as the dashboard's tray: Page, Favourites, Summaries
-    const tabs = [['page', 'Page'], ['favs', 'Favourites'], ['sums', 'Summaries']];
+    const tabs = [['page', 'Page'], ['favs', 'Favourites'], ['sums', 'Summaries'], ['areas', 'Areas']];
+    const areasOff = new Set(prefs.home?.areasOff || []);
+    const areaLi = (r) => '<li class="hcHeRow" data-he-id="' + esc(r.id) + '">' + heGrip(r.name) +
+      '<span class="tfIcon"><span class="tfAreaGlyph"' + iconSlot('area:' + r.id, r.icon || 'mdi:texture-box', r.name) + '></span></span><span class="activityRowName">' + esc(r.name) + '</span>' +
+      sw(!areasOff.has(r.id), 'Show ' + r.name + ' on Home', 'data-he-area="' + esc(r.id) + '"') + '</li>';
     const bodies = {
       page: '<div class="hcHeLine"><span class="activityRowName">Welcome message</span>' + infoBtn('welcome') + sw(welcomeOn(), 'Welcome message', 'data-he-welcome') + '</div>' +
         '<hr class="hcHeRule">' +
@@ -2735,6 +2742,8 @@ export function mountTestFocus(root, { config, getHass }) {
         homeSeg('Width', 'data-he-sums-width', sumsFit() ? 'fit' : 'match', [['match', 'Match the cards'], ['fit', 'Fit the summaries']]) +
         '<hr class="hcHeRule">' +
         '<ul class="tfTrayList hcHeList" data-he-list="sums">' + homeSumOrder().map(sumLi).join('') + '</ul>',
+      areas: '<p class="tfTrayNote">Which areas show on Home. Drag to change their order, here and on the custom dashboard.</p>' +
+        '<ul class="tfTrayList hcHeList" data-he-list="areas">' + overviewRoomsAll().map(areaLi).join('') + '</ul>',
     };
     homeTray.querySelector('[data-he-body]').innerHTML =
       // the note about the areas page first (Matt, 12 Nov: "to the top of the rollover"), as Home Assistant's dialog has it
@@ -2789,8 +2798,8 @@ export function mountTestFocus(root, { config, getHass }) {
     if (homeEditing) { ev.stopPropagation(); setHomeEditing(false); $('dashEditNav')?.focus(); }
   }, true);
   // a row moves up or down its list: its grip dragged, or the arrows on it
-  const homeList = (ul) => (ul.dataset.heList === 'favs' ? starred() : homeSumOrder());
-  const homeOrder = (ul, ids) => (ul.dataset.heList === 'favs' ? homeSave({ favourites: ids }) : homePrefs({ sumOrder: ids }));
+  const homeList = (ul) => (ul.dataset.heList === 'favs' ? starred() : ul.dataset.heList === 'areas' ? overviewRoomsAll().map((r) => r.id) : homeSumOrder());
+  const homeOrder = (ul, ids) => (ul.dataset.heList === 'favs' ? homeSave({ favourites: ids }) : ul.dataset.heList === 'areas' ? (homeSave({ areaOrder: ids }), layoutBoard()) : homePrefs({ sumOrder: ids }));
   homeTray.addEventListener('keydown', (ev) => {
     const g = ev.target.closest('[data-he-grip]'); if (!g || !['ArrowUp', 'ArrowDown'].includes(ev.key)) return;
     ev.preventDefault();
@@ -2831,6 +2840,7 @@ export function mountTestFocus(root, { config, getHass }) {
     const al = t.closest('[data-he-area-layout]'); if (al) { homePrefs({ areaLayout: al.dataset.heAreaLayout }); return; }
     const fl = t.closest('[data-he-flag]'); if (fl) { const key = fl.dataset.heFlag; homePrefs({ [key]: prefs.home?.[key] === false }); return; }
     if (t.closest('[data-he-suggest]')) { homeSave({ suggest: !suggestOn() }); return; }
+    const ha = t.closest('[data-he-area]'); if (ha) { const off = new Set(prefs.home?.areasOff || []), id = ha.dataset.heArea; if (off.has(id)) off.delete(id); else off.add(id); homePrefs({ areasOff: [...off] }); return; }
     const sm = t.closest('[data-he-sum]');
     if (sm) {
       const k = sm.dataset.heSum, on = !sumOn(k), h = prefs.home || {};
