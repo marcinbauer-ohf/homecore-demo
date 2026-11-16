@@ -401,6 +401,8 @@ button.tfAreaIcon{cursor:pointer}
 /* a section's own page (an area's Go, the Security summary): Move Assistant's page header (40 back, 52 title) over its
    devices; the weather steps aside */
 .tfAreaHead{grid-column:1/-1;margin-bottom:0}
+/* an area's page isn't designed yet, and says so at its top (Matt, 16 Nov) */
+.hcNotDesigned{grid-column:1/-1;flex:0 0 100%;justify-self:start;align-self:start;width:max-content;max-width:100%;margin:0;padding:6px 12px;box-sizing:border-box;border-radius:999px;background:color-mix(in srgb,#ffa600 22%,transparent);color:var(--text);font:600 13px/20px var(--font-tile)}
 #app.tfAreaOpen:not(.tfWeatherOpen) #homeView .grid>.tfBento{display:none}
 /* the Weather page is built like the dashboard (Matt, 27 Oct): its first card as far under the title as the dashboard's
    (the grid's gap; the dashboard's title to first card is the rule) and its cards from the left edge, under the back

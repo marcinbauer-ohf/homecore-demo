@@ -3235,6 +3235,8 @@ export function mountTestFocus(root, { config, getHass }) {
     whereIs = new Map();
     model.rooms.forEach((r) => [...r.actions, ...r.plugs, ...r.readings, ...r.openings, ...r.solar, ...r.plants.flatMap((p) => [p.id, ...p.readings])].forEach((id) => whereIs.set(id, r.name)));
     if (!page) return dashboard(out, summaryData());
+    // an area's page isn't designed yet: it says so at its top (Matt, 16 Nov: "this is not designed")
+    if (page.room) out.push({ key: 'areanote', html: '<p class="hcNotDesigned" data-tf data-k="areanote" style="order:' + (++order) + '">This is not designed</p>' });
     out.push({ key: 'areahead', html: areaHead(page, ++order) });
     if (page.key === 'weather') { out.weather = ++order; return out; }
     if (page.demo) return demoPage(out, page.key, order);
