@@ -315,17 +315,14 @@ export function mountDemoShell(root, { getHass, homecore }) {
     if (!editing && pen.parentElement === trayHead) topRight.appendChild(pen);
   }).observe(app, { attributes: true, attributeFilter: ['class'] });
   /* the summaries are chosen in the edit tray now (Matt, 9 Nov): a Summaries section whose button pops out the list,
-     each with its switch; the Settings tab for them goes. The areas the Areas card shows the same way (Matt, 11 Nov):
-     Choose areas, in the tray's Areas section */
+     each with its switch; the Settings tab for them goes. The areas are listed in the tray's Areas tab itself now (Matt,
+     16 Nov), each with its switch */
   (function choosersInTray() {
     $('housePane')?.querySelector('[data-house-tab="sums"]')?.remove();
     const inner = root.querySelector('.tfTrayInner'), headEl = inner?.querySelector('.tfTrayHead');
     if (!inner || !headEl) return;
     headEl.insertAdjacentHTML('afterend', '<section class="tfTraySection hcTraySums"><div class="sectionLabel">Summaries</div><p class="tfTrayNote">Which summaries show under the title.</p>' +
       '<button class="pill tfTrayAdd" type="button" data-hc-sums aria-expanded="false">Choose summaries</button></section>');
-    inner.querySelector('[data-room-add]')?.insertAdjacentHTML('beforebegin', '<button class="pill tfTrayAdd" type="button" data-hc-areas aria-expanded="false">Choose areas</button>');
-    const areasNote = inner.querySelector('[data-room-add]')?.parentElement.querySelector('.tfTrayNote');
-    if (areasNote) areasNote.textContent = 'Which areas the Areas card shows, and one area on its own instead.';
     const chooser = (btn, title, list, set) => {
       app.insertAdjacentHTML('beforeend', '<div class="card hcSumsPop" role="dialog" aria-label="' + esc(title) + '" hidden></div>');
       const pop = app.lastElementChild;
@@ -344,8 +341,6 @@ export function mountDemoShell(root, { getHass, homecore }) {
       root.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !pop.hidden) { ev.stopPropagation(); close(); btn.focus(); } }, true);
     };
     chooser(inner.querySelector('[data-hc-sums]'), 'Summaries', () => homecore.sums(), (k, on) => homecore.setSum(k, on));
-    const areasBtn = inner.querySelector('[data-hc-areas]');
-    if (areasBtn) chooser(areasBtn, 'Areas', () => homecore.areas().map((a) => ({ key: a.id, name: a.name, icon: a.icon, on: a.on })), (k, on) => homecore.setArea(k, on));
   })();
   document.fonts?.ready.then(() => homecore.refit());
   go(location.hash.replace(/^#\/?/, '') || 'home');
