@@ -276,6 +276,12 @@
 /* the popup a device was opened from, parked under the device's (Matt, 11 Nov): where it was, inert, dimmed by the top one */
 .tfMoreBackdrop.tfMoreUnder{z-index:179;pointer-events:none}
 .tfMore{flex:none;width:440px;max-width:100%;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:var(--r-card);background:var(--card);box-shadow:var(--hc-hair-all)}
+/* a popup that scrolls (a summary's on a short window) keeps its bar inside its rounded edge (Matt, 16 Nov: it "still
+   lives outside"): 6 wide, 4 in from the edge, its track stopping a corner's radius short of the top and the foot */
+.tfMore::-webkit-scrollbar{width:10px}
+.tfMore::-webkit-scrollbar-track{margin-block:var(--r-card);background:transparent}
+.tfMore::-webkit-scrollbar-thumb{border-right:4px solid transparent;border-radius:999px;background:color-mix(in srgb,var(--text) 25%,transparent);background-clip:padding-box}
+@supports not selector(::-webkit-scrollbar){.tfMore{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text) 25%,transparent) transparent}}
 .tfMoreHead{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:34px}
 .tfMoreState{font:500 28px/1.15 var(--font-tile);letter-spacing:-.01em}
 /* when it last changed, under the state; while a cover is held, the state is its target in blue */
