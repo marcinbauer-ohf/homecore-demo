@@ -564,7 +564,15 @@ button.tfAreaIcon{cursor:pointer}
 #homeView .card.tfDash-act .activityRows{grid-template-columns:minmax(0,1fr)}
 /* Activity: as many changes as its card fits, whole tiles only (on the board, its height's rows); the rest scroll, a thin
    bar at the side, and each scroll settles smoothly on the next tile (Matt, 27 Oct) */
-#homeView .card.tfDash-act>.activityRows{flex:none;margin-top:auto;max-height:300px;overflow-y:auto;overscroll-behavior:contain;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text) 25%,transparent) transparent}
+#homeView .card.tfDash-act>.activityRows{flex:none;margin-top:auto;max-height:300px;overflow-y:auto;overscroll-behavior:contain;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+/* its bar inset (Matt, 16 Nov: it stuck out the top and bottom "like a broken bone"): 6 wide, 4 in from the card's right
+   edge, its track starting 10 below the list's top and ending 10 above its foot (20 above the card's), clear of the
+   corners. Firefox, which can't inset a bar, keeps its thin one */
+#homeView .card.tfDash-act>.activityRows{margin-right:-6px}
+#homeView .card.tfDash-act>.activityRows::-webkit-scrollbar{width:6px}
+#homeView .card.tfDash-act>.activityRows::-webkit-scrollbar-track{margin-block:10px;background:transparent}
+#homeView .card.tfDash-act>.activityRows::-webkit-scrollbar-thumb{border-radius:3px;background:color-mix(in srgb,var(--text) 25%,transparent)}
+@supports not selector(::-webkit-scrollbar){#homeView .card.tfDash-act>.activityRows{margin-right:0;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--text) 25%,transparent) transparent}}
 #homeView .card.tfDash-act>.activityRows>.activityRow{scroll-snap-align:start}
 #homeView .card.tfDash-energy .activityRows{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 .tfDashCard :is(.activityRowName,.activityRowMeta){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
