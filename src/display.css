@@ -1129,6 +1129,8 @@ button.tfAreaIcon{cursor:pointer}
 #app.light{--title:#55504a}
 #app.light :is(.activityTitle,.hcCardTitle,.wbTitle,.activityRowName,.hcRowName,.wbName){color:var(--title)}
 #app.light .tfRoomTile .tfActionHead .activityRowName{color:var(--text)}
+/* an area card's big reading in #55504A too, as Matt has it in Figma (17 Nov) */
+#app.light .tfRoomBig{color:var(--title)}
 /* a tray's Add… button: a plus before its words, in Home Assistant's blue (#03a9f4, its primary colour), no underline, with
    room around it; as tall as a segmented control (32) and as wide as its words (Matt, 12 Nov) */
 #app .tfTrayAdd.hcAddBtn{display:inline-flex;align-items:center;gap:6px;height:32px;min-height:0;margin:10px 0 12px;padding:0 16px 0 12px;border:0;border-radius:16px!important;background:#03a9f4;color:#ffffff;font:600 14px/20px var(--font-tile);text-decoration:none!important}
