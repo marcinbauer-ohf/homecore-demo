@@ -3818,7 +3818,8 @@ export function mountTestFocus(root, { config, getHass }) {
       const hue = held('huev', id, on && COLOUR_MODES.includes(a.color_mode) && a.hs_color ? a.hs_color[0] : null);
       const warmOk = modes.includes('color_temp'), colourOk = modes.some((m) => COLOUR_MODES.includes(m)), padOk = dacFor(id);
       const vbar = (kind, label, now, inner) => '<div class="tfBar tfVBar ' + kind + '" data-axis="y" role="slider" tabindex="0" aria-orientation="vertical" aria-label="' + esc(nameOf(id) + ' ' + label.toLowerCase()) + '" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(now) + '" data-drag="' + kind + '|' + esc(id) + '">' + inner + '</div>';
-      const col = (label, html, cls = '') => '<div class="tfVCol' + cls + '"><div class="tfMoreLabel">' + esc(label) + '</div>' + html + '</div>';
+      // no names above them (Matt, 17 Nov): each slider says what it is to a screen reader only
+      const col = (label, html, cls = '') => '<div class="tfVCol' + cls + '">' + html + '</div>';
       const brightCol = col('Brightness', vbar('bright', 'Brightness', b, '<i style="height:' + b + '%"></i><span class="tfBarIcon"' + iconSlot('', 'mdi:white-balance-sunny', 'Brightness') + '></span>'));
       const warmF = k == null ? null : (kMax - k) / (kMax - kMin); // warm at the top
       const warmCol = warmOk ? col('Warmth', vbar('ctf', 'Warmth', warmF == null ? 0 : warmF * 100, warmF == null ? '' : '<b style="top:' + Math.round((1 - warmF) * 1000) / 10 + '%"></b>'), ' tfVWarm') : '';

@@ -1165,17 +1165,20 @@ button.tfAreaIcon{cursor:pointer}
 /* ---------- the light, as Home Assistant's more-info has it (Matt, 17 Nov; Figma Popup · Light 1187:5847): the space is
    two vertical sliders 16 apart, each named above in the muted 14, filling its height, corner 24; the pill picks the view
    (Colour, the pad, Sliders) and the (i) sits apart at the foot's right end. Shapes and controls only: no values yet ---------- */
-#app .tfMoreBackdrop:not(.wide) .tfMorePop>.tfMorePage>.tfMoreSpace.tfLightSpace{position:relative;flex:1 0 224px;padding:0;border-radius:0;background:none;overflow:visible}
-.tfVCols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;height:100%;transition:opacity .22s ease,visibility .22s}
+#app .tfMoreBackdrop:not(.wide) .tfMorePop>.tfMorePage>.tfMoreSpace.tfLightSpace{position:relative;flex:1 0 224px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:0;background:none;overflow:visible}
+/* the sliders 30% smaller than the space, centred in it (Matt, 17 Nov: 134 by 319 each on the desktop's), 16 apart */
+.tfVCols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:calc((100% - 16px) * .7 + 16px);height:70%;transition:opacity .22s ease,visibility .22s}
+.tfVCols:has(>:only-child){width:calc((100% - 16px) * .35)} /* one slider (a plain dimmer): the same width, centred */
 .tfVCols:has(>:only-child){grid-template-columns:minmax(0,1fr)}
 .tfVCol,.tfVSwap>*{display:flex;flex-direction:column;gap:8px;min-height:0}
 .tfVSwap{display:grid;min-height:0}
 .tfVSwap>*{grid-area:1/1}
 #app .tfVBar{flex:1;height:auto;min-height:0;border-radius:24px;touch-action:none;box-shadow:var(--hc-hair-all)}
-/* Brightness: a dark track (the bright colour), its sun top left in the card colour, the amber level rising from the bottom */
-#app .tfVBar.bright{background:var(--bright)}
+/* Brightness: the tile colour with its hairline, its sun top left in the text colour, the amber level rising from the
+   bottom (Matt, 17 Nov: in each mode's own colours) */
+#app .tfVBar.bright{background:var(--tile)}
 #app .tfVBar.bright i{inset:auto 0 0 0;width:auto;background:linear-gradient(180deg,#ffc247,#ffaa00)}
-.tfVBar .tfBarIcon{position:absolute;left:14px;top:14px;width:22px;height:22px;color:var(--card);pointer-events:none;--mdc-icon-size:22px}
+.tfVBar .tfBarIcon{position:absolute;left:14px;top:14px;width:22px;height:22px;color:var(--text);pointer-events:none;--mdc-icon-size:22px}
 .tfVBar .tfBarIcon>*{width:22px;height:22px}
 /* Warmth: warm at the top to cold at the bottom; Colour: red at the top through the spectrum to red at the bottom */
 #app .tfVBar.ctf{background:linear-gradient(180deg,#ffaa00,#ffc247 25%,#fff7ee 55%,#d7e7ff)}
