@@ -2041,7 +2041,8 @@ export function mountTestFocus(root, { config, getHass }) {
   // the dashboard's S, M and L (2, 3 and 4 rows) a peg wide, so an area card on Home is the dashboard's at the same size
   // (Matt, 17 Nov: "make the cards used in the overview dashboard match the ones used on the custom dashboard")
   const AREA_SIZES = { s: { w: 252, h: 136, rows: 2 }, m: { w: 252, h: 212, rows: 3 }, l: { w: 252, h: 288, rows: 4 } };
-  const areaSize = () => (AREA_SIZES[prefs.home?.areaSize] ? prefs.home.areaSize : 'm');
+  // until one's picked: Small, and Large on a phone, where only Large shows the cards as they should be (Matt, 17 Nov)
+  const areaSize = () => (AREA_SIZES[prefs.home?.areaSize] ? prefs.home.areaSize : window.matchMedia('(max-width:620px)').matches ? 'l' : 's');
   const areaLayout = () => (['rows', 'columns', 'bento'].includes(prefs.home?.areaLayout) ? prefs.home.areaLayout : 'rows');
   // the cards that aren't areas: Stacked down the left beside the areas, or in Rows across the top over them (Matt, 12 Nov)
   const cardsAs = () => (prefs.home?.cardsAs === 'rows' ? 'rows' : 'stacked');

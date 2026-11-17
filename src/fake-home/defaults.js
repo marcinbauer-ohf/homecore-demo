@@ -31,9 +31,9 @@ export const USER_DATA = {
     shownSums: ['covers', 'people'],
     // Home's first look (Matt, 17 Nov, his screenshots: "by default for the overview page, i want these settings"): the
     // welcome, Schedule (no Weather or Energy today), the cards stacked; the areas not by floor, in Bento with mixed sizes,
-    // Small, fitted together; Favourites as its card; the summaries fitted to their tiles, the first six on
+    // Small (Large on a phone: its size is left unpicked, 17 Nov), fitted together; Favourites as its card; the summaries fitted to their tiles, the first six on
     home: { welcome: true, schedule: true, weather: false, energy: false, cardsAs: 'stacked', byFloor: false, areaLayout: 'bento', bentoBoxes: false, bentoMixed: true,
-      areaSize: 's', fitTogether: true, favs: true, favsAs: 'card', sums: true, sumsWidth: 'fit' },
+      fitTogether: true, favs: true, favsAs: 'card', sums: true, sumsWidth: 'fit' },
     dash: {
       pegs: 8,
       cells: CELLS,
