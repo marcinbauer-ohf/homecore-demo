@@ -3990,7 +3990,11 @@ export function mountTestFocus(root, { config, getHass }) {
         if ([...dragging.keys()].some((k) => box.children[i].querySelector('[data-drag="' + CSS.escape(k) + '"]'))) return;
         const t = document.createElement('div');
         t.innerHTML = p;
+        // where its rows and pages were scrolled stays (17 Nov: the thermostat's rows jumped back to the top each time
+        // its reading changed, so they couldn't be scrolled down)
+        const scrolled = [...box.children[i].querySelectorAll('.tfMoreCtl,.tfMorePage')].map((e) => e.scrollTop);
         const next = swapIn(box.children[i], t.firstElementChild);
+        next.querySelectorAll('.tfMoreCtl,.tfMorePage').forEach((e, k) => { if (scrolled[k]) e.scrollTop = scrolled[k]; });
         fillIcons(next);
         drawPlantGraphs(next);
         mountDacs(next);

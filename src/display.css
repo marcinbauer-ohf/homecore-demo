@@ -1147,7 +1147,7 @@ button.tfAreaIcon{cursor:pointer}
    of room round what they hold (the held glow reaches 13), so nothing clips it, without moving anything (17 Nov: "the
    highlighting… is broken"); the pages are 28 apart, so each is still a page's width (with its room) along */
 #app .tfMoreBackdrop:not(.wide) .tfMorePages{margin:-14px;padding:14px;gap:28px;scroll-padding-inline:14px}
-#app .tfMoreBackdrop:not(.wide) .tfMorePop>.tfMorePage:not([aria-label="Info"]){overflow:visible}
+#app .tfMoreBackdrop:not(.wide) .tfMorePop>.tfMorePage:not([aria-label="Info"]){overflow:visible;min-height:0} /* no taller than its place, so its rows scroll (17 Nov: the thermostat's couldn't) */
 #app .tfMoreBackdrop:not(.wide) :is(.tfMorePages:not(.tfMorePop)>.tfMorePage,.tfMorePop>.tfMorePage[aria-label="Info"]){margin:-14px;padding:14px}
 .tfMoreCtl{margin:-14px;padding:14px}
 /* a colour light's second track: warmth on Controls, colour on Colour, in one place, cross-fading (Matt, 17 Nov: the
