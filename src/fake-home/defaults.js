@@ -23,16 +23,17 @@ const S = { h: 2 }, L = { h: 4 };
 
 export const USER_DATA = {
   move_assistant_house: {
-    // six to start with (Matt, 14 Nov: "only have 6 favourites in the favourites box for the default start"), and no
+    // four to start with, in Matt's order (17 Nov: the lock, the curtains, the watering, the thermostat), and no
     // suggestions after them
-    favourites: ['climate.made_up_living_room', 'cover.made_up_living_room_curtains', 'valve.made_up_balcony_watering', 'lock.openable_lock',
-      'light.green_wavy_light', 'light.fire_place_lamp'],
+    favourites: ['lock.openable_lock', 'cover.made_up_living_room_curtains', 'valve.made_up_balcony_watering', 'climate.made_up_living_room'],
     favSeeded: true,
     suggest: false,
     shownSums: ['covers', 'people'],
-    // Home's first look (Matt, 12 Nov, his screenshot: "push this as the default layout"): Favourites as a strip under the
-    // summaries, no Schedule, the areas grouped by floor in Bento, each floor a box, every area card Small
-    home: { favsAs: 'strip', schedule: false, byFloor: true, areaLayout: 'bento', bentoBoxes: true, bentoMixed: false, areaSize: 's' },
+    // Home's first look (Matt, 17 Nov, his screenshots: "by default for the overview page, i want these settings"): the
+    // welcome, Schedule (no Weather or Energy today), the cards stacked; the areas not by floor, in Bento with mixed sizes,
+    // Small, fitted together; Favourites as its card; the summaries fitted to their tiles, the first six on
+    home: { welcome: true, schedule: true, weather: false, energy: false, cardsAs: 'stacked', byFloor: false, areaLayout: 'bento', bentoBoxes: false, bentoMixed: true,
+      areaSize: 's', fitTogether: true, favs: true, favsAs: 'card', sums: true, sumsWidth: 'fit' },
     dash: {
       pegs: 8,
       cells: CELLS,
