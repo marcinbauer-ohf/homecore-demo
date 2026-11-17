@@ -1150,6 +1150,13 @@ button.tfAreaIcon{cursor:pointer}
 #app .tfMoreBackdrop:not(.wide) .tfMorePop>.tfMorePage:not([aria-label="Info"]){overflow:visible}
 #app .tfMoreBackdrop:not(.wide) :is(.tfMorePages:not(.tfMorePop)>.tfMorePage,.tfMorePop>.tfMorePage[aria-label="Info"]){margin:-14px;padding:14px}
 .tfMoreCtl{margin:-14px;padding:14px}
+/* a colour light's second track: warmth on Controls, colour on Colour, in one place, cross-fading (Matt, 17 Nov: the
+   switch or pad and the brightness stay put); in Colour the strip holds still, so a swipe changes the mode, not the page */
+.tfMoreSwap{display:grid}
+.tfMoreSwap>*{grid-area:1/1;transition:opacity .18s ease,visibility .18s}
+.tfMorePage[data-mode="colour"] .tfMoreSwap>:not(.hue),.tfMorePage:not([data-mode="colour"]) .tfMoreSwap>.hue{opacity:0;visibility:hidden;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.tfMoreSwap>*{transition:none}}
+#app .tfMorePages.tfMoreHold{overflow-x:hidden}
 .tfMoreCtl>*{flex:none}
 /* a row named above it: the muted 14 name, 6 over its control */
 .tfMoreField{display:flex;flex-direction:column;gap:6px}
