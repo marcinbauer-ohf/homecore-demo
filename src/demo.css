@@ -417,10 +417,10 @@
 .hcIntroSky{position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:linear-gradient(#00a6d4,#c2c9d1),radial-gradient(189% 100% at 48.7% 0%,#020918 0%,#051027 24.25%,#002869 40.62%,#0056ec 60.21%,#60a1ff 78.77%,#e7e7e1 96.71%);
   background-blend-mode:hard-light,normal}
-#app.hcIntroGo .hcIntroSky{animation:hcIntroSky .5s cubic-bezier(.4,0,.2,1) .4s both}
+#app.hcIntroGo .hcIntroSky{animation:hcIntroSky var(--intro-sky-fade,.5s) var(--intro-sky-ease,ease) var(--intro-sky-hold,.4s) both}
 @keyframes hcIntroSky{to{opacity:0}}
 #app.hcIntro:not(.hcIntroGo) #homeView :is(.tfBoardItem,.tfDashTitle){opacity:0}
-#app.hcIntroGo #homeView .tfBoardItem:not(.tfDashTitle){animation:hcIntroCard .5s cubic-bezier(.2,0,0,1) var(--intro-d,250ms) both}
-@keyframes hcIntroCard{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
-.hcIntroLetter{display:inline-block;white-space:pre;transform-origin:50% 60%;animation:hcIntroLetter .45s cubic-bezier(.34,1.46,.64,1) both}
-@keyframes hcIntroLetter{from{opacity:0;transform:perspective(300px) rotateX(-100deg) translateY(.25em)}60%{opacity:1}to{opacity:1;transform:none}}
+#app.hcIntroGo #homeView .tfBoardItem:not(.tfDashTitle){animation:hcIntroCard var(--intro-card-dur,.5s) var(--intro-card-ease,ease) var(--intro-d,250ms) both}
+@keyframes hcIntroCard{from{opacity:0;translate:0 var(--intro-rise,14px);scale:var(--intro-scale,1)}to{opacity:1;translate:0 0;scale:1}}
+.hcIntroLetter{display:inline-block;white-space:pre;transform-origin:50% 60%;animation:hcIntroLetter var(--intro-letter-dur,.45s) var(--intro-letter-ease,ease) both}
+@keyframes hcIntroLetter{from{opacity:0;transform:perspective(300px) rotateX(var(--intro-rx,-100deg)) rotateY(var(--intro-ry,0deg)) translateY(var(--intro-lrise,.25em))}60%{opacity:1}to{opacity:1;transform:none}}
