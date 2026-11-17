@@ -60,21 +60,40 @@ export function playIntro(root, app, c = INTRO) {
     const inView = (el) => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.width > 0; };
     // a text's letters spin in from `from`, `step` apart, all begun within `spread`
     const textsOf = (el, skip) => { const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), out = []; for (let n = w.nextNode(); n; n = w.nextNode()) if (n.nodeValue.trim() && !(skip && skip.contains(n))) out.push(n); return out; };
+    const jobs = [], queued = new Set();
     const spin = (nodes, from, step, spread = Infinity) => {
       let k = 0;
-      nodes.forEach((n) => {
-        const wrap = document.createElement('span');
-        wrap.className = 'hcIntroWord';
-        [...n.nodeValue].forEach((ch) => {
-          const s = document.createElement('span');
-          s.className = 'hcIntroLetter';
-          s.textContent = ch;
-          s.style.animationDelay = Math.round(from + Math.min(k++ * step, spread)) + 'ms';
-          wrap.appendChild(s);
-        });
-        n.replaceWith(wrap);
+      nodes.forEach((n) => { if (queued.has(n)) return; queued.add(n); jobs.push({ n, delays: [...n.nodeValue].map(() => Math.round(from + Math.min(k++ * step, spread))) }); });
+    };
+    /* the letters are split out only once everything is chosen, in four passes so the page is measured once each way:
+       where each letter sits in the kerned text; the split; each split letter's own width; then each letter is nudged
+       so it sits exactly where it was. Split letters lose their kerning (the title grew 4.7 px), so without the nudge
+       they jumped back when they turned into plain text again (Matt, 17 Nov: "a little jump at the end") */
+    const lay = () => {
+      const rng = document.createRange();
+      jobs.forEach((j) => {
+        const len = j.n.nodeValue.length;
+        j.at = [];
+        for (let i = 0; i <= len; i++) {
+          if (i < len) { rng.setStart(j.n, i); rng.setEnd(j.n, i + 1); const b = rng.getBoundingClientRect(); j.at.push({ x: b.left, y: b.top }); }
+          else { rng.setStart(j.n, len - 1); rng.setEnd(j.n, len); const b = rng.getBoundingClientRect(); j.at.push({ x: b.right, y: b.top }); }
+        }
+      });
+      jobs.forEach((j) => {
+        j.wrap = document.createElement('span');
+        j.wrap.className = 'hcIntroWord';
+        j.letters = [...j.n.nodeValue].map((ch) => { const l = document.createElement('span'); l.className = 'hcIntroSplit'; l.textContent = ch; j.wrap.appendChild(l); return l; });
+        j.n.replaceWith(j.wrap);
+        const { n, wrap } = j;
         undo.push(() => { if (wrap.isConnected) wrap.replaceWith(document.createTextNode(n.nodeValue)); });
       });
+      jobs.forEach((j) => { j.w = j.letters.map((l) => l.getBoundingClientRect().width); });
+      jobs.forEach((j) => j.letters.forEach((l, i) => {
+        const a = j.at[i], b = j.at[i + 1];
+        if (Math.abs(b.y - a.y) < 2) l.style.marginRight = (b.x - a.x - j.w[i]).toFixed(2) + 'px'; // not across a line break
+        l.className = 'hcIntroLetter';
+        l.style.animationDelay = j.delays[i] + 'ms';
+      }));
     };
     // first the greeting, then the house's name (Matt, 17 Nov)
     const title = [...root.querySelectorAll('#homeView .tfDashTitle')].find(inView), greet = title?.querySelector('.tfGreeting');
@@ -92,18 +111,19 @@ export function playIntro(root, app, c = INTRO) {
       if (!card || !inView(el) || el.closest('.hcIntroWord') || el.querySelector('.hcIntroWord')) return;
       spin(textsOf(el), (parseInt(card.style.getPropertyValue('--intro-d'), 10) || t.cardStart) + c.letterAfter, c.letterStagger, c.letterSpread);
     });
+    lay();
     void app.offsetWidth; // a replay starts its animations again
     app.classList.add('hcIntroGo');
     // done: the words back to plain text, the sky gone
     timers.push(setTimeout(end, t.end + 100));
   };
   stop = end;
-  // once the board has laid itself out, so the cards are where they'll stay
-  if (app.classList.contains('tfBoardReady')) requestAnimationFrame(start);
-  else {
-    const mo = new MutationObserver(() => { if (app.classList.contains('tfBoardReady')) { mo.disconnect(); requestAnimationFrame(start); } });
-    mo.observe(app, { attributes: true, attributeFilter: ['class'] });
-  }
-  timers.push(setTimeout(start, 1500)); // whatever happens, it doesn't stay hidden
+  // once the page has placed its cards, so they're where they'll stay (Home and the custom dashboard both give each
+  // card its top); checked about every frame (by a timer, which a page in the background still gets)
+  const placed = () => [...root.querySelectorAll(CARDS)].some((el) => el.style.top);
+  const wait = () => { if (started) return; if (placed()) start(); else timers.push(setTimeout(wait, 16)); };
+  // and once Geist has loaded, so the letters are measured in it
+  (document.fonts?.ready || Promise.resolve()).then(wait);
+  timers.push(setTimeout(start, 1200)); // whatever happens, it doesn't stay hidden
 }
 export const mountIntro = (root, app) => playIntro(root, app);

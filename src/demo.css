@@ -422,5 +422,6 @@
 #app.hcIntro:not(.hcIntroGo) #homeView :is(.tfBoardItem,.tfDashTitle){opacity:0}
 #app.hcIntroGo #homeView .tfBoardItem:not(.tfDashTitle){animation:hcIntroCard var(--intro-card-dur,.5s) var(--intro-card-ease,ease) var(--intro-d,250ms) both}
 @keyframes hcIntroCard{from{opacity:0;translate:0 var(--intro-rise,14px);scale:var(--intro-scale,1)}to{opacity:1;translate:0 0;scale:1}}
+.hcIntroSplit{display:inline-block;white-space:pre}
 .hcIntroLetter{display:inline-block;white-space:pre;transform-origin:50% 60%;animation:hcIntroLetter var(--intro-letter-dur,.45s) var(--intro-letter-ease,ease) both}
 @keyframes hcIntroLetter{from{opacity:0;transform:perspective(300px) rotateX(var(--intro-rx,-100deg)) rotateY(var(--intro-ry,0deg)) translateY(var(--intro-lrise,.25em))}60%{opacity:1}to{opacity:1;transform:none}}
