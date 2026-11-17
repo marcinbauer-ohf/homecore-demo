@@ -54,7 +54,8 @@
    softer than black; 4.8:1 light, 3.9:1 dark). A light that's on shows its own colour (--light, set on its tile with
    data-light); alerts and a triggered alarm stay red */
 #app.house{--hc-icon:#3a3a3a;--hc-icon-ink:var(--text)}
-#app.house.light{--hc-icon:#e6e6e6}
+/* a grey chip's glyph is the title colour, softer than black (Matt, 17 Nov: "soften them up") */
+#app.house.light{--hc-icon:#e6e6e6;--hc-icon-ink:var(--title)}
 #app.house #homeView .activityRowIcon{background:var(--hc-icon);color:var(--hc-icon-ink)}
 /* phones (Matt, 28 Oct): cards 16 apart, double the 8 (the Weather page's too, and so the title to the first card);
    page titles 30% smaller, 46 to 32, the back arrow's glyph with them. It keeps its 40 to tap, hanging over the

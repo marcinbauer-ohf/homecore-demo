@@ -230,7 +230,7 @@
 /* ---------- one icon everywhere (Matt, 9 Nov: "take the icon style from the dashboard and use it throughout"): the
    dashboard's chip (.tfIcon, its glyph fitted and its soft 3D edge by HomeCore), neutral, or a colour by HomeCore's
    rule (data-light) ---------- */
-:is(.hcPage,.hcSearchPop) .tfIcon{border:0;overflow:hidden;background-color:var(--hc-icon);color:var(--hc-icon-ink)}
+:is(.hcPage,.hcSearchPop,.hcSetList) .tfIcon{border:0;overflow:hidden;background-color:var(--hc-icon);color:var(--hc-icon-ink)}
 :is(.hcPage,.hcSearchPop) .tfIcon[data-light]{background-color:var(--light-soft);color:var(--light-ink)}
 .tfIcon>img{display:block;width:100%;height:100%;object-fit:cover}
 /* the phone's menu and ⋯: a plain icon beside each name, as on the rail */
