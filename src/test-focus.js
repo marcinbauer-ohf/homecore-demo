@@ -1169,8 +1169,9 @@ export function mountTestFocus(root, { config, getHass }) {
   /* one room on its own (Tile · Room, Matt, 6 Nov; Figma 954:6176): a tile added from the edit tray instead of the Areas
      card, keyed room:<area>. The head is the room's icon and name; XS its reading in the head, S the reading big, M its
      devices too (up to four), L and XL the reading bigger with its second under it. It never opens out: the tile opens
-     the room's page, and each device button that device's control (one device its own, a room's lights or covers as a
-     group) */
+     the room's page. Its interactions are the Areas card's open area's (Matt, 17 Nov: "bring them all"): the room's
+     icon turns its lights on and off, a device's icon turns it on and off, its name opens its control (one device its
+     own, a room's lights or covers as a group), the reading opens its more-info, and the edge lights up */
   const isRoomKey = (key) => key.startsWith('room:');
   const roomOf = (key) => areaRooms.find((r) => 'room:' + r.id === key);
   function roomTile(r, key, attrs = '') {
@@ -1178,16 +1179,23 @@ export function mountTestFocus(root, { config, getHass }) {
     const big = h ? h.text + (h.unit ? ' ' + h.unit : '') : '';
     const opens = (k) => { const ids = groupIds(r, k.key); return ids.length === 1 ? ids[0] : 'group:' + r.id + ':' + k.key; };
     const controls = keys.filter((k) => k.kind === 'control').slice(0, 4), lit = (k) => (k.on && k.light ? ' data-light style="' + k.light + '"' : '');
-    const devices = controls.map((k) => '<button class="tfIcon' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) +
-      ' data-more="' + esc(opens(k)) + '" aria-label="' + esc(k.label + ', ' + k.value + '. Open its controls') + '">' + k.icon + '</button>');
-    // wide, the same devices as heads (icon, name, state), as the open room shows them (Matt, 6 Nov; Figma 954:6297)
-    const heads = controls.map((k) => '<button class="tfRoomDev" type="button" data-more="' + esc(opens(k)) + '" aria-label="' + esc(k.label + ', ' + k.value + '. Open its controls') + '">' +
-      '<span class="tfIcon' + (k.on ? ' on' : '') + '" data-tone="' + k.tone + '"' + lit(k) + '>' + k.icon + '</span><span class="tfRoomDevName"><span class="activityRowName">' + esc(k.label) + '</span><span class="activityRowMeta">' + esc(k.value) + '</span></span></button>');
+    // the icon is the button: it turns the device on and off
+    const toggle = (k) => '<button class="tfIcon' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) + ' data-acts="' + acts(k.acts) + '" aria-label="' + esc(k.aria) + '" aria-pressed="' + k.on + '">' + k.icon + '</button>';
+    const devices = controls.map(toggle);
+    // wide, the same devices as heads (icon, name, state), as the open room shows them (Matt, 6 Nov; Figma 954:6297): the
+    // name opens its control
+    const heads = controls.map((k) => '<div class="tfRoomDev' + (k.on ? ' on' : '') + '">' + toggle(k) +
+      '<button class="tfName tfRoomDevName" type="button" data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '"><span class="activityRowName">' + esc(k.label) + '</span><span class="activityRowMeta">' + esc(k.value) + '</span></button></div>');
+    // the room's icon turns its lights on and off (always grey for now); a room without lights only shows it
+    const lights = keys.find((k) => k.key === 'lights'), glyph = '<span class="tfAreaGlyph"' + iconSlot('area:' + r.id, r.icon || 'mdi:texture-box', r.name) + '></span>';
+    const roomIcon = lights ? '<button class="tfIcon tfRoomIcon" type="button" data-acts="' + acts(lights.acts) + '" aria-label="' + esc(lights.aria) + '" aria-pressed="' + Boolean(lights.on) + '">' + glyph + '</button>'
+      : '<span class="tfIcon tfRoomIcon" aria-hidden="true">' + glyph + '</span>';
     return '<div class="tfAction tfRoomTile"' + (key ? ' data-k="' + esc(key) + '"' : '') + attrs + ' data-go="' + esc(r.id) + '">' +
-      '<div class="tfActionHead"><span class="tfIcon tfRoomIcon" aria-hidden="true"><span class="tfAreaGlyph"' + iconSlot('area:' + r.id, r.icon || 'mdi:texture-box', r.name) + '></span></span>' +
+      '<div class="tfActionHead">' + roomIcon +
       '<button class="tfName" type="button" data-go="' + esc(r.id) + '" aria-label="Open ' + esc(r.name) + '"><span class="activityRowName">' + esc(r.name) + '</span>' +
       (big || sub ? '<span class="activityRowMeta">' + (big ? '<span class="tfRoomInline">' + esc(big) + (sub ? ' · ' : '') + '</span>' : '') + esc(sub) + '</span>' : '') + '</button></div>' +
-      (big ? '<div class="tfRoomReading" aria-hidden="true"><span class="tfRoomBig">' + esc(big) + '</span>' + (sub ? '<span class="tfRoomSub">' + esc(sub) + '</span>' : '') + '</div>' : '') +
+      // the reading opens its more-info (the thermometer's, say)
+      (big ? '<button class="tfRoomReading" type="button" data-more="' + esc(main) + '" aria-label="' + esc(nameOf(main) + ', ' + valueOf(main) + '. More info') + '"><span class="tfRoomBig">' + esc(big) + '</span>' + (sub ? '<span class="tfRoomSub">' + esc(sub) + '</span>' : '') + '</button>' : '') +
       (devices.length ? '<div class="tfRoomDevices">' + devices.join('') + '</div><div class="tfRoomHeads">' + heads.join('') + '</div>' : '') + '</div>';
   }
 
