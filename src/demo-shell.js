@@ -11,6 +11,7 @@ import { renderActivity } from './pages/activity.js';
 import { openSearch } from './pages/search.js';
 import { renderConfig, renderAbout } from './pages/ha-settings.js';
 import { mountLook } from './look.js';
+import { mountIntro } from './intro.js';
 import { closeDialog, toaster } from './motion.js';
 import { IMG } from './images.js';
 
@@ -364,5 +365,6 @@ export function mountDemoShell(root, { getHass, homecore }) {
   })();
   document.fonts?.ready.then(() => homecore.refit());
   go(location.hash.replace(/^#\/?/, '') || 'home');
+  mountIntro(root, app); // the load-in, once
   return { go };
 }

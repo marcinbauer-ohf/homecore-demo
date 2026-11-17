@@ -6,7 +6,7 @@
 .hcI{display:block;width:var(--glyph-size);height:var(--glyph-size);fill:currentColor;flex:none}
 
 /* ---------- the rail (desktop): logo, search, the pages in the middle, you at the bottom ---------- */
-.hcRail{position:fixed;z-index:90;inset:0 auto 0 0;width:var(--hc-rail);display:flex;flex-direction:column;align-items:center;gap:22px;padding:20px 0;background:var(--bg)} /* no line between it and the page (Matt, 12 Nov) */
+.hcRail{position:fixed;z-index:90;inset:0 auto 0 0;width:var(--hc-rail);display:flex;flex-direction:column;align-items:center;gap:22px;padding:20px 0;background:none} /* no line between it and the page (Matt, 12 Nov), and no background of its own: the page's shows through (17 Nov) */
 .hcRailMain{flex:1;display:flex;flex-direction:column;justify-content:center;gap:12px}
 /* the logo, half its size (Matt, 9 Nov: 20), is the Home button: full colour on Home, dimmed elsewhere */
 .hcLogo{display:grid;place-items:center;width:var(--chip-size);height:var(--chip-size)}
@@ -406,3 +406,21 @@
 #app.hcDemo :is(.wb .wbSegments button,.tfBoardMenu .tfHeightTabs button){height:26px!important;padding:0 12px;border-radius:13px!important;font:600 12px/16px var(--font-tile)!important}
 /* an Oops panel's picture, as in the popup: no wider than drawn (424) */
 .hcSoon .hcArtOops{max-width:424px}
+
+/* ---------- the page's background (Matt's Figma "fade to this BG", 1158:22518): its own colour with a light blue at
+   the top, 0.12 fading out over 357 ---------- */
+#app.hcDemo .shell{background:linear-gradient(rgba(44,164,255,.12),rgba(10,10,10,0) 357px) var(--bg)}
+
+/* ---------- the load-in (intro.js; Matt, 17 Nov): the blue sky ("Start on this", 1158:22498) behind everything, fading
+   out from 0.4 s; the cards fade up in turn; the words' letters spin in. About 1.1 s in all ---------- */
+#app.hcIntro .shell{isolation:isolate}
+.hcIntroSky{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(#00a6d4,#c2c9d1),radial-gradient(189% 100% at 48.7% 0%,#020918 0%,#051027 24.25%,#002869 40.62%,#0056ec 60.21%,#60a1ff 78.77%,#e7e7e1 96.71%);
+  background-blend-mode:hard-light,normal}
+#app.hcIntroGo .hcIntroSky{animation:hcIntroSky .5s cubic-bezier(.4,0,.2,1) .4s both}
+@keyframes hcIntroSky{to{opacity:0}}
+#app.hcIntro:not(.hcIntroGo) #homeView :is(.tfBoardItem,.tfDashTitle){opacity:0}
+#app.hcIntroGo #homeView .tfBoardItem:not(.tfDashTitle){animation:hcIntroCard .5s cubic-bezier(.2,0,0,1) var(--intro-d,250ms) both}
+@keyframes hcIntroCard{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
+.hcIntroLetter{display:inline-block;white-space:pre;transform-origin:50% 60%;animation:hcIntroLetter .45s cubic-bezier(.34,1.46,.64,1) both}
+@keyframes hcIntroLetter{from{opacity:0;transform:perspective(300px) rotateX(-100deg) translateY(.25em)}60%{opacity:1}to{opacity:1;transform:none}}
