@@ -1,16 +1,16 @@
 // The load-in (Matt, 17 Nov: "lets try something quite silly… a fade in load"), from his Figma frames 1158:22778:
 // the page opens on the blue sky ("Start on this", 1158:22498), and after 0.4 s it fades into the page's own light
 // background ("fade to this BG", 1158:22518) while the words spin in letter by letter: the greeting first, then the
-// house's name, then the cards fade up in turn (Matt, 17 Nov), their names spinning in with them. About 1.2 s in all. Once per load; with Reduce motion on it doesn't run. Its timings are INTRO's (the dev tweaker,
+// house's name, then the cards fade up in turn (Matt, 17 Nov), their names rising in with them. About 3.2 s in all, at his values. Once per load; with Reduce motion on it doesn't run. Its timings are INTRO's (the dev tweaker,
 // intro-tweaker.js, changes them live).
 import { reduced } from './motion.js';
 
 export const EASES = { soft: 'cubic-bezier(.4,0,.2,1)', standard: 'cubic-bezier(.2,0,0,1)', land: 'cubic-bezier(.34,1.46,.64,1)', spring: 'cubic-bezier(.2,1.2,.4,1)', linear: 'linear' };
-export const INTRO_DEFAULTS = Object.freeze({
-  skyHold: 400, skyFade: 500, skyEase: 'soft', // the blue, then its fade
-  greetStart: 60, greetStagger: 8, nameGap: 40, nameStagger: 18, // the greeting's letters, then the house's name's
-  cardsAfter: 120, cardStagger: 30, cardSpread: 300, cardDur: 450, cardRise: 14, cardScale: 100, cardEase: 'standard', // the cards, once the name has begun
-  letterAfter: 0, letterStagger: 22, letterSpread: 150, letterDur: 400, letterTurn: -100, letterAxis: 'X', letterRise: 25, letterEase: 'land', // every word's letters
+export const INTRO_DEFAULTS = Object.freeze({ // Matt's values from the tweaker (17 Nov)
+  skyHold: 950, skyFade: 1500, skyEase: 'soft', // the blue, then its fade
+  greetStart: 60, greetStagger: 21, nameGap: 470, nameStagger: 47, // the greeting's letters, then the house's name's
+  cardsAfter: 210, cardStagger: 139, cardSpread: 300, cardDur: 1500, cardRise: 31, cardScale: 110, cardEase: 'soft', // the cards, once the name has begun
+  letterAfter: 490, letterStagger: 12, letterSpread: 150, letterDur: 1090, letterTurn: 0, letterAxis: 'X', letterRise: 20, letterEase: 'soft', // every word's letters
   words: 'names', // 'names': titles and names spin; 'all': every word in the cards spins too
 });
 export const INTRO = { ...INTRO_DEFAULTS };
