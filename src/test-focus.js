@@ -2041,8 +2041,8 @@ export function mountTestFocus(root, { config, getHass }) {
   // the dashboard's S, M and L (2, 3 and 4 rows) a peg wide, so an area card on Home is the dashboard's at the same size
   // (Matt, 17 Nov: "make the cards used in the overview dashboard match the ones used on the custom dashboard")
   const AREA_SIZES = { s: { w: 252, h: 136, rows: 2 }, m: { w: 252, h: 212, rows: 3 }, l: { w: 252, h: 288, rows: 4 } };
-  // until one's picked: Small, and Large on a phone, where only Large shows the cards as they should be (Matt, 17 Nov)
-  const areaSize = () => (AREA_SIZES[prefs.home?.areaSize] ? prefs.home.areaSize : window.matchMedia('(max-width:620px)').matches ? 'l' : 's');
+  // the size picked in Edit Home page, Small until one is; it's the desktop's (a phone lays them out Large, layoutHome)
+  const areaSize = () => (AREA_SIZES[prefs.home?.areaSize] ? prefs.home.areaSize : 's');
   const areaLayout = () => (['rows', 'columns', 'bento'].includes(prefs.home?.areaLayout) ? prefs.home.areaLayout : 'rows');
   // the cards that aren't areas: Stacked down the left beside the areas, or in Rows across the top over them (Matt, 12 Nov)
   const cardsAs = () => (prefs.home?.cardsAs === 'rows' ? 'rows' : 'stacked');
@@ -2175,7 +2175,9 @@ export function mountTestFocus(root, { config, getHass }) {
     /* the areas (Edit Home page, Matt, 12 Nov): grouped by floor or not, laid out as Rows (each floor's name, then its
        areas a row at a time), Columns (a column per floor, side by side) or Bento, where each floor can be a box the
        boxes fitting together, and each floor's first area can be big (two by two, its devices by name) */
-    const size = areaSize(), dims = AREA_SIZES[size], lay = areaLayout(), byFloor = prefs.home?.byFloor !== false;
+    // a phone (620 or narrower) always shows them Large, whatever's picked; the pick is the desktop's (Matt, 17 Nov: "bigger
+    // on mobile, but still maintain their chosen size on desktop")
+    const size = phone || window.matchMedia('(max-width:620px)').matches ? 'l' : areaSize(), dims = AREA_SIZES[size], lay = areaLayout(), byFloor = prefs.home?.byFloor !== false;
     const cw = cols.w, ch = dims.h; // a column wide, the dashboard's height for the size
     const n = phone ? 2 : Math.max(1, Math.floor((aW + gap) / (cw + gap)));
     const roomEls = new Map(shown.filter((it) => isRoomKey(it.key)).map((it) => [it.key, it]));
