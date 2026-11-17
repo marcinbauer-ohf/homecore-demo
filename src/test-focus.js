@@ -2274,10 +2274,20 @@ export function mountTestFocus(root, { config, getHass }) {
       });
       top = Math.max(...sky.map((g) => g.t));
     } else {
-      // Rows: each floor's name, then its areas a row at a time (Bento's big first area too)
+      // Rows: each floor's name, then its areas a row at a time (Bento's big first area too). Fit together: the most columns
+      // (up to all that fit) that leave no gap, or in Bento one a card grows down into, so they make a neat block; any
+      // width left over stays empty (Matt, 17 Nov)
+      const fitCols = (f) => {
+        if (!prefs.home?.fitTogether || phone) return n;
+        for (let c = n; c >= 1; c--) {
+          const cells = f.cards.length + (mixed && f.cards.length > 1 && c >= 2 ? 3 : 0), rows = Math.ceil(cells / c), holes = rows * c - cells;
+          if (holes === 0 || (bento && holes === 1 && rows > 1)) return c;
+        }
+        return n;
+      };
       floors.forEach((f, i) => {
         if (i) top += HOME.floorTop;
-        const g = pack(f, n, cw);
+        const g = pack(f, fitCols(f), cw);
         place(f, { ...g, w: aW }, aX, top);
         top += g.h + gap;
       });
@@ -2755,7 +2765,9 @@ export function mountTestFocus(root, { config, getHass }) {
         homeSeg('Layout', 'data-he-area-layout', areaLayout(), [['rows', 'Rows'], ['columns', 'Columns'], ['bento', 'Bento']]) +
         (areaLayout() === 'bento' ? '<div class="hcHeLine"><span class="activityRowName">Floors as boxes</span>' + sw(prefs.home?.bentoBoxes !== false, 'Floors as boxes', 'data-he-flag="bentoBoxes"') + '</div>' +
           '<div class="hcHeLine"><span class="activityRowName">Mixed sizes</span>' + sw(prefs.home?.bentoMixed !== false, 'Mixed sizes', 'data-he-flag="bentoMixed"') + '</div>' : '') +
-        homeSeg('Area cards', 'data-he-area-size', areaSize(), [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']]),
+        homeSeg('Area cards', 'data-he-area-size', areaSize(), [['s', 'Small'], ['m', 'Medium'], ['l', 'Large']]) +
+        // Fit together (Matt, 17 Nov): the areas as a neat block, not spread over every column that fits
+        '<div class="hcHeLine"><span class="activityRowName">Fit together</span>' + sw(!!prefs.home?.fitTogether, 'Fit together', 'data-he-fit') + '</div>',
       // Favourites on Home at all (Matt, 12 Nov: "a show favourites toggle")
       favs: '<div class="hcHeLine"><span class="activityRowName">Show favourites</span>' + sw(prefs.home?.favs !== false, 'Show favourites', 'data-he-card="favs"') + '</div>' +
         '<hr class="hcHeRule">' +
@@ -2856,6 +2868,7 @@ export function mountTestFocus(root, { config, getHass }) {
     const as = t.closest('[data-he-area-size]'); if (as) { homePrefs({ areaSize: as.dataset.heAreaSize }); return; }
     const ca = t.closest('[data-he-cards-as]'); if (ca) { homePrefs({ cardsAs: ca.dataset.heCardsAs }); return; }
     const al = t.closest('[data-he-area-layout]'); if (al) { homePrefs({ areaLayout: al.dataset.heAreaLayout }); return; }
+    if (t.closest('[data-he-fit]')) { homePrefs({ fitTogether: !prefs.home?.fitTogether }); return; }
     const fl = t.closest('[data-he-flag]'); if (fl) { const key = fl.dataset.heFlag; homePrefs({ [key]: prefs.home?.[key] === false }); return; }
     if (t.closest('[data-he-suggest]')) { homeSave({ suggest: !suggestOn() }); return; }
     const ha = t.closest('[data-he-area]'); if (ha) { const off = new Set(prefs.home?.areasOff || []), id = ha.dataset.heArea; if (off.has(id)) off.delete(id); else off.add(id); homePrefs({ areasOff: [...off] }); return; }
