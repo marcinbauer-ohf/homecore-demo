@@ -1137,8 +1137,10 @@ export function mountTestFocus(root, { config, getHass }) {
   // what it's doing in place of the room's temperature, so there aren't two temperatures
   const mainSub = (r, id, keys) => {
     const t = keys.find((k) => k.key === 'temp'), h = keys.find((k) => k.key === 'hum'), a = attr(id), off = states[id].state === 'off';
-    if (id.startsWith('climate.')) return [inRoom(r, id), off ? 'Off' : cap(a.hvac_action || states[id].state) + (a.temperature != null ? ' · ' + deg(a.temperature) : ''), h && h.value + ' humidity'].filter(Boolean).join(' · ');
-    return [!(t && t.id === id) && inRoom(r, id), t && t.id !== id && t.value, h && h.id !== id && h.value + ' humidity'].filter(Boolean).join(' · ');
+    // a percentage beside a temperature is the humidity without saying so (Matt, 17 Nov: "remove the term 'humidity'"); on
+    // its own it still says
+    if (id.startsWith('climate.')) return [inRoom(r, id), off ? 'Off' : cap(a.hvac_action || states[id].state) + (a.temperature != null ? ' · ' + deg(a.temperature) : ''), h && h.value].filter(Boolean).join(' · ');
+    return [!(t && t.id === id) && inRoom(r, id), t && t.id !== id && t.value, h && h.id !== id && h.value + (t ? '' : ' humidity')].filter(Boolean).join(' · ');
   };
   // the open card: the room's icon (its lights) and name (its page), with any alerts; the main, which opens its
   // more-info; up to four controls as tiles, the icon the button
