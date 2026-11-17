@@ -2107,7 +2107,9 @@ export function mountTestFocus(root, { config, getHass }) {
     const hidden = new Set(dashPrefs().hidden);
     items.forEach((it) => it.el.classList.toggle('tfBoardHidden', hidden.has(it.key)));
     const shown = items.filter((it) => !hidden.has(it.key) && getComputedStyle(it.el).display !== 'none');
-    const gap = phone ? HOME.phoneGap : HOME.gap;
+    // the dashboard's columns and gap (Matt, 17 Nov: Home's cards as wide as the custom dashboard's): as many columns as fit
+    // at 200 or more, stretched to fill the page, 16 apart; two across on a phone
+    const gap = PEG_GAP, cols = phone ? { n: 2, w: Math.floor((W - gap) / 2) } : pegsFor(W);
     // the summaries (and Favourites as a strip) as wide as five of Matt's columns, or the page where it's narrower
     const gridW = Math.min(W, HOME.full);
     let top = 0;
@@ -2132,7 +2134,6 @@ export function mountTestFocus(root, { config, getHass }) {
        order you dragged them into, 520 and 337 as drawn; on a phone each the whole width and as tall as it needs. Then
        each floor: its name, then its areas at the size picked, as many to a row as fit (two on a phone, as tall as they
        need). Everything gives up to 15% on a smaller screen */
-    const k = phone ? 1 : Math.max(0.85, Math.min(1, W / HOME.full));
     const own = ['favs', 'sched', 'wx', 'energy'];
     const saved = homeDrag?.order || prefs.home?.order;
     const order = saved ? [...saved.filter((x) => own.includes(x)), ...own.filter((x) => !saved.includes(x))] : own;
@@ -2146,7 +2147,7 @@ export function mountTestFocus(root, { config, getHass }) {
       if (homeDrag?.on && homeDrag.key === it.key) { homeLand(box); return; }
       Object.assign(it.el.style, { left: box.x + 'px', top: box.y + 'px' });
     };
-    const tw = phone ? W : Math.round((2 * HOME.col + HOME.inner) * k), th = Math.round(HOME.row * k);
+    const tw = phone ? W : 2 * cols.w + gap, th = HOME.row; // two columns, 337 as drawn
     /* the cards that aren't areas (Favourites as a card, Schedule, Weather, Energy): Stacked (the start) down the left,
        a column 520 wide, one under another, the areas to their right in whichever layout (Matt, 12 Nov, his Figma "Home
        (overview)": the weather under Favourites, the areas beside them), the page as tall as the taller side; or Rows,
@@ -2173,7 +2174,7 @@ export function mountTestFocus(root, { config, getHass }) {
        areas a row at a time), Columns (a column per floor, side by side) or Bento, where each floor can be a box the
        boxes fitting together, and each floor's first area can be big (two by two, its devices by name) */
     const size = areaSize(), dims = AREA_SIZES[size], lay = areaLayout(), byFloor = prefs.home?.byFloor !== false;
-    const cw = phone ? Math.floor((W - gap) / 2) : Math.round(dims.w * k), ch = phone ? dims.h : Math.round(dims.h * k);
+    const cw = cols.w, ch = dims.h; // a column wide, the dashboard's height for the size
     const n = phone ? 2 : Math.max(1, Math.floor((aW + gap) / (cw + gap)));
     const roomEls = new Map(shown.filter((it) => isRoomKey(it.key)).map((it) => [it.key, it]));
     const groupsAll = byFloor ? floorGroups() : [{ id: '', name: '', icon: '', rooms: overviewRooms() }];
@@ -2242,22 +2243,36 @@ export function mountTestFocus(root, { config, getHass }) {
       });
       top = rowB + gap;
     } else if (boxes) {
-      // each floor a box, as many cards wide as suits it (two rows for more than three), the boxes fitting together:
-      // each where it sits highest, from the left
-      const colTop = Array(n).fill(top);
+      // each floor a box, as many cards wide as suits it (two rows for more than three), its 12 round the cards (Matt, 17 Nov:
+      // the cards a column wide in a box too, not 12 narrower), the boxes fitting together: each where it sits highest, from
+      // the left, by their own widths
+      let sky = [{ x0: 0, x1: aW, t: top }];
+      const topOver = (x0, x1) => Math.max(...sky.filter((g) => g.x1 > x0 && g.x0 < x1).map((g) => g.t));
+      const raise = (x0, x1, t) => {
+        const out = [];
+        sky.forEach((g) => { if (g.x1 <= x0 || g.x0 >= x1) out.push(g); else { if (g.x0 < x0) out.push({ x0: g.x0, x1: x0, t: g.t }); if (g.x1 > x1) out.push({ x0: x1, x1: g.x1, t: g.t }); } });
+        out.push({ x0, x1, t });
+        sky = out.sort((a, b) => a.x0 - b.x0);
+      };
       floors.forEach((f) => {
         const cells = f.cards.length + (mixed && f.cards.length > 1 ? 3 : 0);
-        const c = phone ? 2 : Math.min(n, Math.max(mixed && f.cards.length > 1 ? 2 : 1, cells <= 3 ? cells : Math.ceil(cells / 2)));
-        const outer = c * (cw + gap) - gap, inner = Math.floor((outer - 2 * BOX - (c - 1) * gap) / c);
-        const g = { ...pack(f, c, inner), w: outer - 2 * BOX };
-        let s0 = 0, best = Infinity;
-        for (let s = 0; s + c <= n; s++) { const t = Math.max(...colTop.slice(s, s + c)); if (t < best) { best = t; s0 = s; } }
-        const x = aX + s0 * (cw + gap), h = g.h + 2 * BOX;
-        boxAt(f, x, best, outer, h);
-        place(f, g, x + BOX, best + BOX, cardPad(f));
-        for (let s = s0; s < s0 + c; s++) colTop[s] = best + h + gap;
+        let c = phone ? 2 : Math.min(n, Math.max(mixed && f.cards.length > 1 ? 2 : 1, cells <= 3 ? cells : Math.ceil(cells / 2)));
+        while (!phone && c > 1 && c * cw + (c - 1) * gap + 2 * BOX > aW) c--; // a phone keeps two, a little narrower
+        // its box as many cards wide as suits it, or fewer when that lets it sit higher, beside another box; a card a column
+        // wide, unless even one in its box can't be (a phone, or one column beside the stack)
+        let pick = null;
+        for (let cc = c; cc >= (phone ? c : 1); cc--) {
+          const inner = Math.min(cw, Math.floor((aW - 2 * BOX - (cc - 1) * gap) / cc));
+          const g = { ...pack(f, cc, inner), w: cc * inner + (cc - 1) * gap }, bw = g.w + 2 * BOX, h = g.h + 2 * BOX;
+          sky.map((s2) => s2.x0).filter((x0) => x0 + bw <= aW + 0.5).forEach((x0) => { const t = topOver(x0, x0 + bw); if (!pick || t < pick.t - 0.5) pick = { cc, inner, bw, h, t, x: x0 }; });
+        }
+        if (!pick) { const inner = Math.min(cw, aW - 2 * BOX), g0 = pack(f, 1, inner); pick = { cc: 1, inner, bw: inner + 2 * BOX, h: g0.h + 2 * BOX, t: topOver(0, aW), x: 0 }; }
+        const g = { ...pack(f, pick.cc, pick.inner), w: pick.cc * pick.inner + (pick.cc - 1) * gap }, bw = pick.bw, h = pick.h, bx = pick.x, best = pick.t;
+        boxAt(f, aX + bx, best, bw, h);
+        place(f, g, aX + bx + BOX, best + BOX, cardPad(f));
+        raise(bx, Math.min(aW, bx + bw + gap), best + h + gap);
       });
-      top = Math.max(...colTop);
+      top = Math.max(...sky.map((g) => g.t));
     } else {
       // Rows: each floor's name, then its areas a row at a time (Bento's big first area too)
       floors.forEach((f, i) => {
