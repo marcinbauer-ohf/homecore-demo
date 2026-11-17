@@ -1185,16 +1185,21 @@ button.tfAreaIcon{cursor:pointer}
 #app .tfVBar.huev{background:linear-gradient(180deg,#ff0000,#ffff00 17%,#00ff00 33%,#00ffff 50%,#0000ff 67%,#ff00ff 83%,#ff0000)}
 /* the handle: across, 30 by 4, white with the slider's shadow */
 #app .tfVBar b{left:50%;right:auto;bottom:auto;width:30px;height:4px;margin:-2px 0 0 -15px;border-radius:2px}
-/* Sliders and Colour: Brightness stays where it is and the second slider changes in place, sliding in from its tab's side */
-#app .tfVSwap>*{transition:opacity .26s cubic-bezier(.2,0,0,1),translate .32s cubic-bezier(.34,1.2,.64,1),visibility .32s}
-.tfMorePage[data-mode="colour"] .tfVSwap>.tfVWarm{opacity:0;translate:28px 0;visibility:hidden;pointer-events:none}
-.tfMorePage:not([data-mode="colour"]) .tfVSwap>.tfVColour{opacity:0;translate:-28px 0;visibility:hidden;pointer-events:none}
+/* Sliders and Colour: Brightness stays where it is and the second slider changes in place. The one going fades away; the
+   one coming fades in where it sits with a small pulse, up and settling, landing in place (Matt, 17 Nov: "fade, pulse
+   and land in place… rather than sliding in"; the Motion Lab's land) */
+#app .tfVSwap>*{transition:opacity .18s ease,visibility .18s}
+.tfMorePage[data-mode="colour"] .tfVSwap>.tfVWarm{opacity:0;visibility:hidden;pointer-events:none}
+.tfMorePage:not([data-mode="colour"]) .tfVSwap>.tfVColour{opacity:0;visibility:hidden;pointer-events:none}
+@keyframes tfVLand{from{opacity:0;scale:.94}55%{opacity:1;scale:1.035}to{opacity:1;scale:1}}
+.tfMorePage[data-mode="colour"] .tfVSwap>.tfVColour,.tfMorePage:not([data-mode="colour"]):not([data-mode="dac"]) .tfVSwap>.tfVWarm,
+.tfMorePage[data-mode="dac"] .tfLightPad,.tfMorePage:not([data-mode="dac"]) .tfVCols{animation:tfVLand .42s cubic-bezier(.34,1.46,.64,1) backwards} /* (not held at its end, so the next change can fade it away) */
 .tfVSwap>.tfVColour:only-child{opacity:1!important;translate:0 0!important;visibility:visible!important;pointer-events:auto!important} /* colour without warmth */
 /* the pad (the Dual Axis Controller) fills the whole space, corner 24 */
 .tfLightPad{position:absolute;inset:0;border-radius:24px;overflow:hidden;--tf-dac-pad:100cqh;--tf-dac-max:none;container-type:size;transition:opacity .22s ease,visibility .22s}
 .tfLightPad>.tfDacPad{width:100%;height:100%}
 .tfMorePage:not([data-mode="dac"]) .tfLightPad,.tfMorePage[data-mode="dac"] .tfVCols{opacity:0;visibility:hidden;pointer-events:none}
-@media(prefers-reduced-motion:reduce){#app .tfVSwap>*,.tfVCols,.tfLightPad{transition:none}}
+@media(prefers-reduced-motion:reduce){#app .tfVSwap>*,.tfVCols,.tfLightPad{transition:none;animation:none!important}}
 /* the foot: a 40 gap, the pill centred, the (i) at the right end */
 .tfMoreFoot{display:flex;flex:none;align-items:center;justify-content:space-between;height:40px}
 .tfMoreFootGap{flex:none;width:40px}
