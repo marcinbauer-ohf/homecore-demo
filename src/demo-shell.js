@@ -110,6 +110,7 @@ export function mountDemoShell(root, { getHass, homecore }) {
      from inside another page (a card, a search result, a row) has ‹ back to it. The trail is a list of places:
      'home', a page, 'settings', or 'area:<key>' for HomeCore's own pages (Weather, Logbook, a room) */
   let trail = [], going = false, cur = 'home';
+  let setOpen = () => {}; // HomeCore settings on a phone: which of its pages is open (tuneSettings fills it in)
   const board = () => (homecore.overview === false ? 'dashboards' : 'home');
   const where = () => (settingsView.classList.contains('active') ? 'settings' : homecore.page ? 'area:' + homecore.page : pageOn || board());
   const BACK_SVG = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18L9 12L15 6"/></svg>';
@@ -164,6 +165,7 @@ export function mountDemoShell(root, { getHass, homecore }) {
     const inSettings = settingsView.classList.contains('active');
     if (route === 'settings') {
       showPage(null);
+      if (!inSettings) setOpen(null); // opened afresh: its list
       if (!inSettings) $('settingsNav').click();
       requestAnimationFrame(() => homecore.refit());
     } else {
@@ -215,6 +217,8 @@ export function mountDemoShell(root, { getHass, homecore }) {
   root.addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-hc-back],[data-area-back],#settingsBack');
     if (!b) return;
+    // a HomeCore settings page on a phone: back to its list
+    if (b.id === 'settingsBack' && settingsView.classList.contains('hcSetOpen')) { ev.stopImmediatePropagation(); ev.preventDefault(); setOpen(null); return; }
     if (b.matches('[data-hc-back]') || (trail.length && !BOARDS.has(trail[trail.length - 1])) || b.id === 'settingsBack') { ev.stopImmediatePropagation(); ev.preventDefault(); back(); }
   }, true);
 
@@ -279,6 +283,22 @@ export function mountDemoShell(root, { getHass, homecore }) {
       lights.querySelector('.hcLightView').addEventListener('click', (ev) => { const b = ev.target.closest('[data-light-view]'); if (b) show(b.dataset.lightView); });
       show(view);
     }
+    /* on a phone its tabs are a list, each opening its own page with ‹ back to the list, as Settings and My account do
+       (Matt, 17 Nov: "follow the same navigation pattern and apply it across the settings") */
+    // (Summaries' tab goes to the edit tray, below)
+    const tabs = [...pane.querySelectorAll('.houseTabs [data-house-tab]')].filter((t) => t.dataset.houseTab !== 'sums');
+    const SET_ICONS = { look: 'mdi:palette', style: 'mdi:view-grid-outline', lights: 'mdi:lightbulb', sources: 'mdi:chart-box-outline' };
+    pane.querySelector('.houseTabs').insertAdjacentHTML('beforebegin', '<section class="card hcRowsCard hcSetList">' + tabs.map((t) =>
+      '<button class="hcRow hcConfigRow" type="button" data-hc-set="' + t.dataset.houseTab + '"><span class="tfIcon hcChip">' + icon(SET_ICONS[t.dataset.houseTab] || 'mdi:cog') + '</span>' +
+      '<span class="hcRowText"><span class="hcRowName">' + esc(t.textContent) + '</span></span><span class="hcRowEnd">' + icon('mdi:chevron-right') + '</span></button>').join('') + '</section>');
+    const title = settingsView.querySelector('.settingsTitle'), titleText = title.textContent;
+    setOpen = (k) => {
+      settingsView.classList.toggle('hcSetOpen', Boolean(k));
+      title.textContent = k ? pane.querySelector('[data-house-tab="' + k + '"]').textContent : titleText;
+      if (k) pane.querySelector('[data-house-tab="' + k + '"]').click();
+      window.scrollTo(0, 0);
+    };
+    pane.querySelector('.hcSetList').addEventListener('click', (ev) => { const b = ev.target.closest('[data-hc-set]'); if (b) setOpen(b.dataset.hcSet); });
   })();
   // Appearance: the cards, the background and the stroke (Matt, 9 Nov)
   mountLook(root, { toast: (msg) => toaster.show?.(msg) });

@@ -68,7 +68,8 @@
 /* a button with words in the toolbar: a 46 track like HomeCore's controls */
 #app .hcBtn{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 16px;border:0;border-radius:16px!important;background:var(--tile);color:var(--text);box-shadow:var(--hc-hair-all);font:600 14px/20px var(--font-tile);white-space:nowrap;cursor:pointer}
 .hcBtn .hcI{width:22px;height:22px}
-@media(max-width:620px){.hcHead,.hcAccount>.hcTitle{padding:0 16px}}
+/* a phone: every page's title 16 in, its ‹ with it (Settings, About and Activity had them on the screen's edge) */
+@media(max-width:620px){.hcHead,.hcPage .hcTitle:not(.hcHead .hcTitle){padding:0 16px}}
 
 /* the toolbar: Filters, search, group, sort, columns, table or cards. Every control 46 tall, as HomeCore's tracks */
 .hcToolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
@@ -148,7 +149,16 @@
 
 /* ---------- ⋯'s HomeCore pages: top level here, so no back arrow; a room's name above its card ---------- */
 /* a page opened from the side menu has no back arrow; one opened from another page has ‹ back (Matt, 9 Nov) */
-#app.hcNoBack :is(.tfAreaHead .back,#settingsBack){display:none}
+/* a page's own sub-page (My account's, HomeCore settings' on a phone) always has ‹ back to its list */
+#app.hcNoBack :is(.tfAreaHead:not(.hcPanelHead) .back,#settingsView:not(.hcSetOpen) #settingsBack){display:none}
+
+/* HomeCore settings on a phone: its tabs as a list, each opening its own page with ‹ back to the list (Matt, 17 Nov) */
+#app .hcSetList{display:none}
+@media(max-width:620px){
+  #app.hcDemo #housePane .houseTabs{display:none}
+  #app.hcDemo #settingsView:not(.hcSetOpen) .hcSetList{display:grid;padding:var(--inset);border-radius:var(--r-card);background:var(--card);box-shadow:var(--hc-hair)}
+  #app.hcDemo #settingsView:not(.hcSetOpen) #housePane .houseTab{display:none}
+}
 
 /* ---------- My account: the title, then the list beside the page it opens; narrow, one then the other ---------- */
 .hcAccount{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,640px);grid-template-areas:"title title" "list panel";column-gap:40px;row-gap:16px;align-items:start}
@@ -180,6 +190,7 @@
   .hcAccount.hcShowPanel :is(.hcAccList,.hcTitle){display:none}
   .hcAccount.hcShowPanel .hcPanel:not([hidden]){display:grid!important}
   .hcAccount.hcShowPanel .hcPanelHead{display:flex}
+  .hcAccount.hcShowPanel{grid-template-areas:"panel"}
 }
 
 /* ---------- Map: the map fills the page, one card floats on it (Figma 981:9937, HomeCore's padding and corners) ---------- */
@@ -252,7 +263,8 @@
 /* every page from the left, as Home (Matt, 9 Nov): Settings, the Weather page and the room pages were centred */
 #app.hcDemo .view{margin-left:0}
 /* a page's title with its back arrow: HomeCore's page header */
-.hcTitle{display:flex;align-items:center;gap:8px;margin:0}
+/* its ‹ 12.8 from the title, as HomeCore's own pages (a room's) and Settings have it */
+.hcTitle{display:flex;align-items:center;gap:12.8px;margin:0}
 .hcTitle .settingsTitle{margin:0}
 
 /* segmented controls hug their words (Matt, 9 Nov: "too big… they dominate"): as wide as their segments, from the left.

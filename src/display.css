@@ -62,8 +62,8 @@
 @media(max-width:620px){
   #app.house{--grid-gap:16px}
   #app.house .settingsTitle{font-size:32px}
-  #app.house .tfAreaHead .back{margin-block:calc((32px * .92 - 40px) / 2)}
-  #app.house .tfAreaHead .back svg{width:24px;height:24px}
+  #app.house :is(.tfAreaHead,#settingsView>.settingsHeader) .back{margin-block:calc((32px * .92 - 40px) / 2)}
+  #app.house :is(.tfAreaHead,#settingsView>.settingsHeader) .back svg{width:24px;height:24px}
 }
 @container wb-bento (width < 652px){
   #app.house .wbBento{gap:var(--grid-gap)}
