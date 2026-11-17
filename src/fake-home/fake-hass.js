@@ -20,11 +20,11 @@ function stateIconName(st) {
   if (byClass[dc]) return byClass[dc];
   if (d === 'cover') { // as Home Assistant: the kind of cover, open or closed
     const shut = s === 'closed';
-    return ({ curtain: shut ? 'mdi:curtains-closed' : 'mdi:curtains', blind: shut ? 'mdi:blinds-horizontal-closed' : 'mdi:blinds-horizontal', shade: shut ? 'mdi:roller-shade-closed' : 'mdi:roller-shade' })[dc] || (shut ? 'mdi:window-shutter' : 'mdi:window-shutter-open');
+    return ({ curtain: shut ? 'mdi:curtains-closed' : 'mdi:curtains', blind: shut ? 'mdi:blinds-horizontal-closed' : 'mdi:blinds-horizontal', shade: shut ? 'mdi:roller-shade-closed' : 'mdi:roller-shade', garage: shut ? 'mdi:garage' : 'mdi:garage-open' })[dc] || (shut ? 'mdi:window-shutter' : 'mdi:window-shutter-open');
   }
   return ({ light: on ? "mdi:lightbulb" : "mdi:lightbulb-off", switch: on ? "mdi:toggle-switch-variant" : "mdi:toggle-switch-variant-off", media_player: s === "off" ? "mdi:cast-off" : "mdi:cast",
     lock: s === "locked" ? "mdi:lock" : s === "jammed" ? "mdi:lock-alert" : "mdi:lock-open-variant", climate: "mdi:thermostat", vacuum: "mdi:robot-vacuum", humidifier: on ? "mdi:air-humidifier" : "mdi:air-humidifier-off",
-    alarm_control_panel: s === "disarmed" ? "mdi:shield-off" : s === "triggered" ? "mdi:shield-alert" : "mdi:shield-home", valve: "mdi:valve", plant: "mdi:flower", person: "mdi:account", weather: "mdi:weather-partly-cloudy",
+    alarm_control_panel: s === "disarmed" ? "mdi:shield-off" : s === "triggered" ? "mdi:shield-alert" : "mdi:shield-home", valve: "mdi:valve", fan: on ? "mdi:fan" : "mdi:fan-off", water_heater: s === "off" ? "mdi:water-boiler-off" : "mdi:water-boiler", plant: "mdi:flower", person: "mdi:account", weather: "mdi:weather-partly-cloudy",
     sensor: "mdi:gauge", binary_sensor: on ? "mdi:alert-circle" : "mdi:home" })[d] || "mdi:circle-medium";
 }
 customElements.define("ha-icon", class extends HTMLElement {
