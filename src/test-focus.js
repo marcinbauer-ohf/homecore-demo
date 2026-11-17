@@ -1098,9 +1098,6 @@ export function mountTestFocus(root, { config, getHass }) {
     return ({ lights: r.lights, covers: of(/^cover\./), climate: of(/^climate\./).slice(0, 1), humidifier: of(/^humidifier\./).slice(0, 1), plugs: r.plugs,
       media: (() => { const players = of(/^media_player\./); return [players.find((id) => states[id]?.state === 'playing') || players.find((id) => states[id]?.state === 'paused') || players[0]].filter(Boolean); })() })[key] || [];
   };
-  const keyButton = (k, cls, inner) => '<button class="' + cls + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '" data-acts="' + acts(k.acts) + '" aria-label="' + esc(k.aria) + '" aria-pressed="' + k.on + '">' + inner + '</button>';
-  // the room's name opens its page (Matt, 28 Oct: the title is the link; there's no Go any more)
-  const areaTitle = (r) => '<button class="tfAName" type="button" data-go="' + esc(r.id) + '" aria-label="Open ' + esc(r.name) + '">' + esc(r.name) + '</button>';
   // the room's own icon (its area's in Home Assistant, else Home Assistant's own area icon), the button for its lights
   // (Matt, 28 Oct, Figma "Area card accordions v04" 521:9673), always grey for now. A room without lights, and a folded
   // card, only show it
@@ -1112,7 +1109,6 @@ export function mountTestFocus(root, { config, getHass }) {
     if (folded || !k) return '<span class="tfIcon tfAreaIcon' + (on ? ' on' : '') + '"' + lit + ' aria-hidden="true">' + glyph + '</span>';
     return '<button class="tfIcon tfAreaIcon' + (on ? ' on' : '') + '" type="button"' + lit + ' data-acts="' + acts(k.acts) + '" aria-label="' + esc(k.aria) + '" aria-pressed="' + on + '">' + glyph + '</button>';
   }
-  const alertTags = (keys) => keys.filter((k) => k.kind === 'alert' || k.kind === 'note').map((k) => '<span class="sourceTag">' + esc(k.label) + '</span>').join(' ');
   // a room's main: its temperature, else its first reading, else its first device
   const mainOf = (r) => r.readings.find((id) => attr(id).device_class === 'temperature') || [...r.readings, ...r.solar, ...r.openings, ...r.actions, ...r.plugs].find((id) => states[id]) || null;
   // a name without its room's ("Living room humidity" in the living room is "Humidity")
@@ -1142,23 +1138,8 @@ export function mountTestFocus(root, { config, getHass }) {
     if (id.startsWith('climate.')) return [inRoom(r, id), off ? 'Off' : cap(a.hvac_action || states[id].state) + (a.temperature != null ? ' · ' + deg(a.temperature) : ''), h && h.value].filter(Boolean).join(' · ');
     return [!(t && t.id === id) && inRoom(r, id), t && t.id !== id && t.value, h && h.id !== id && h.value + (t ? '' : ' humidity')].filter(Boolean).join(' · ');
   };
-  // the open card: the room's icon (its lights) and name (its page), with any alerts; the main, which opens its
-  // more-info; up to four controls as tiles, the icon the button
-  function areaBody(r, keys, main) {
-    const h = main && headline(main), sub = main ? mainSub(r, main, keys) : '';
-    // the icon is the button; the name and value open what the tile stands for: a room's lights, covers or plugs as a
-    // group, one device as its own more-info (Matt, 27 Oct)
-    const opens = (k) => { const ids = groupIds(r, k.key); return ids.length === 1 ? ids[0] : 'group:' + r.id + ':' + k.key; };
-    const tiles = keys.filter((k) => k.kind === 'control').slice(0, 4).map((k) => '<div class="tfATile' + (k.on ? ' on' : '') + '" data-tone="' + k.tone + '"' + (k.light ? ' data-light style="' + k.light + '"' : '') + '>' + keyButton(k, 'tfIcon', k.icon) +
-      '<button class="tfName" type="button" data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '"><span class="activityRowName">' + esc(k.label) + '</span><span class="activityRowMeta">' + esc(k.value) + '</span></button></div>');
-    // its notes (an open door, a leak) sit in the card's top right corner, so they never push the reading down (Matt, 8 Nov)
-    const tags = alertTags(keys);
-    return '<div class="workoutPanelTop">' + areaIcon(r, keys) + '<div class="tfATitle">' + areaTitle(r) + '</div>' + (tags ? '<div class="tfATags">' + tags + '</div>' : '') + '</div>' +
-      (main ? '<button class="tfABig" type="button" data-more="' + esc(main) + '" aria-label="' + esc(nameOf(main) + ', ' + valueOf(main) + '. More info') + '">' +
-        '<span class="tfABigMain' + (h.text.length > 7 ? ' long' : '') + '">' + esc(h.text) + (h.unit ? '<span class="tfABigUnit">' + esc(h.unit) + '</span>' : '') + '</span>' +
-        (sub ? '<span class="tfABigSub">' + esc(sub) + '</span>' : '') + '</button>' : '') +
-      (tiles.length ? '<div class="tfATiles">' + tiles.join('') + '</div>' : '');
-  }
+  /* the open area is the area card itself (Tile · Room at Wide, two columns; Matt, 17 Nov: "the only difference is they
+     come pre-grouped with defined behaviour"), as tall as the Areas card */
   function areaPanel(r) {
     const isActive = r.id === activeArea, keys = roomKeys(r), main = mainOf(r), h = main && headline(main);
     // a folded card's content can't be reached until it's open. Folded (Matt's Figma "Area card accordions v04" 521:9673,
@@ -1166,7 +1147,7 @@ export function mountTestFocus(root, { config, getHass }) {
     // icons two by two (an alert after them, in red; an open door or window plain); tapping anywhere opens it
     const chips = [...keys.filter((k) => k.kind === 'control'), ...keys.filter((k) => k.kind !== 'control' && k.kind !== 'reading')].slice(0, 4);
     return '<article class="workoutPanel tfAreaPanel' + (isActive ? ' active' : '') + '" data-area="' + esc(r.id) + '" tabindex="0" aria-expanded="' + isActive + '" aria-label="' + esc(r.name) + '">' +
-      '<div class="panelExpanded"' + (isActive ? '' : ' inert') + '>' + areaBody(r, keys, main) + '</div>' +
+      '<div class="panelExpanded"' + (isActive ? '' : ' inert') + '>' + roomTile(r, null, ' data-cols="2" data-rows="' + sizeOf('areas') + '"') + '</div>' +
       '<div class="panelCollapsed tfACollapsed"><div class="tfACTop">' + areaIcon(r, keys, true) + '<span class="tfACName">' + esc(r.name) + '</span></div>' +
       '<span class="tfACMain">' + (h ? esc(h.text + (h.unit ? ' ' + h.unit : '')) : '') + '</span>' +
       '<span class="tfACTiles" aria-hidden="true">' + chips.map((k) => '<span class="tfACTile"><span class="tfIcon' + (k.kind === 'alert' ? ' alert' : '') + '"' + (k.on && k.light ? ' data-light style="' + k.light + '"' : '') + '>' + k.icon + '</span></span>').join('') + '</span></div></article>';
@@ -1192,7 +1173,7 @@ export function mountTestFocus(root, { config, getHass }) {
      group) */
   const isRoomKey = (key) => key.startsWith('room:');
   const roomOf = (key) => areaRooms.find((r) => 'room:' + r.id === key);
-  function roomTile(r, key) {
+  function roomTile(r, key, attrs = '') {
     const keys = roomKeys(r), main = mainOf(r), h = main && headline(main), sub = main ? mainSub(r, main, keys) : '';
     const big = h ? h.text + (h.unit ? ' ' + h.unit : '') : '';
     const opens = (k) => { const ids = groupIds(r, k.key); return ids.length === 1 ? ids[0] : 'group:' + r.id + ':' + k.key; };
@@ -1202,7 +1183,7 @@ export function mountTestFocus(root, { config, getHass }) {
     // wide, the same devices as heads (icon, name, state), as the open room shows them (Matt, 6 Nov; Figma 954:6297)
     const heads = controls.map((k) => '<button class="tfRoomDev" type="button" data-more="' + esc(opens(k)) + '" aria-label="' + esc(k.label + ', ' + k.value + '. Open its controls') + '">' +
       '<span class="tfIcon' + (k.on ? ' on' : '') + '" data-tone="' + k.tone + '"' + lit(k) + '>' + k.icon + '</span><span class="tfRoomDevName"><span class="activityRowName">' + esc(k.label) + '</span><span class="activityRowMeta">' + esc(k.value) + '</span></span></button>');
-    return '<div class="tfAction tfRoomTile" data-k="' + esc(key) + '" data-go="' + esc(r.id) + '">' +
+    return '<div class="tfAction tfRoomTile"' + (key ? ' data-k="' + esc(key) + '"' : '') + attrs + ' data-go="' + esc(r.id) + '">' +
       '<div class="tfActionHead"><span class="tfIcon tfRoomIcon" aria-hidden="true"><span class="tfAreaGlyph"' + iconSlot('area:' + r.id, r.icon || 'mdi:texture-box', r.name) + '></span></span>' +
       '<button class="tfName" type="button" data-go="' + esc(r.id) + '" aria-label="Open ' + esc(r.name) + '"><span class="activityRowName">' + esc(r.name) + '</span>' +
       (big || sub ? '<span class="activityRowMeta">' + (big ? '<span class="tfRoomInline">' + esc(big) + (sub ? ' · ' : '') + '</span>' : '') + esc(sub) + '</span>' : '') + '</button></div>' +
@@ -1997,6 +1978,8 @@ export function mountTestFocus(root, { config, getHass }) {
       it.el.style.height = p.h + 'px';
       // a phone shows the weather card whole, its sentence and days, whatever its size on the big board (Matt, 9 Nov)
       it.el.dataset.rows = phone && it.key === 'wx' ? 5 : sizeOf(it.key);
+      // the Areas card's open area is an area card as tall as it
+      if (it.key === 'areas') it.el.querySelectorAll('.tfAreaPanel .tfRoomTile').forEach((t) => { t.dataset.rows = it.el.dataset.rows; });
       // one column wide on a board of more (not a phone's single column): the card's narrow version (Matt, 6 Nov)
       it.el.toggleAttribute('data-narrow', !phone && p.cols === 1 && n > 1);
       it.el.dataset.cols = p.cols; // how many columns it spans (a room's tile lays out by it)

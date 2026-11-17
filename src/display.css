@@ -26,8 +26,8 @@
 /* hover: tile fill and a hairline (0.2, 0.4 along the bottom), on a tile that's tapped whole and on a device's tile,
    whose icon and name are its buttons (Favourites, Activity, an open area's tiles) */
 #homeView .card .activityRow.tap{cursor:pointer}
-#homeView .card .activityRow:is(.tap,:has(.tfName)),#homeView .tfATile{transition:background .15s ease,box-shadow .15s ease}
-#homeView .card .activityRow:is(.tap,:has(.tfName)):hover,#homeView .tfATile:hover{background:var(--tile);box-shadow:inset 0 0 0 .2px var(--line),inset 0 -.4px 0 var(--line)}
+#homeView .card .activityRow:is(.tap,:has(.tfName)){transition:background .15s ease,box-shadow .15s ease}
+#homeView .card .activityRow:is(.tap,:has(.tfName)):hover{background:var(--tile);box-shadow:inset 0 0 0 .2px var(--line),inset 0 -.4px 0 var(--line)}
 
 /* weather: the card is 20 in from its edge (10 on phones); under Now, the days are tiles side by side like every card of readings
    (Matt, 23 Oct; Figma Components → "Weather in halves · proposal") */
@@ -199,10 +199,7 @@
 .tfTitleBtn{min-height:0;padding:0;border:0;border-radius:0;background:none;color:inherit;text-align:left;cursor:pointer}
 /* area cards: the move panels' accordion, one panel per room */
 .tfAreas{grid-column:1/-1;min-width:0}
-.tfAreaPanel .workoutPanelTop>div{min-width:0}
 /* an open area's notes in the card's top right corner, beside its name (Matt, 8 Nov) */
-.tfATags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;margin-left:auto;min-width:0}
-.tfATags .sourceTag{display:block;margin:0;max-width:100%;padding:6px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* covers (Claude Design "Covers design" → Main.dc.html): four blocks for 25/50/75/100, a Shut to Open tilt bar and
    Open/Stop/Close, each 38 tall with corner 12 and 3 inside, as drawn there (the HomeCore bars beside them are 46 / 16) */
 .tfBlocks{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;height:46px;padding:4px;border-radius:16px;background:var(--tile);box-shadow:var(--hc-hair-all);cursor:pointer;touch-action:none;user-select:none;container:blocks/inline-size}
@@ -392,15 +389,13 @@
    controls as tiles inside the padding. Folded: the icon with the name under it (6 apart), the main 32 light, the
    room's control icons two by two.
    ========================================================= */
-/* its edges match every card that holds tiles (Matt, 9 Nov): the tiles reach out to 10 from the card's sides, as in
-   Favourites, so their icons sit 20 in, and the room's icon, name and reading sit 20 in on the same line */
-#homeView .workoutPanel.tfAreaPanel{padding:18px 20px 10px}
-.tfAreaPanel .tfATiles{margin-inline:-10px}
-.tfAreaPanel .workoutPanelTop{justify-content:flex-start;gap:14px;padding:0}
-.tfAreaPanel .panelExpanded{justify-content:flex-start;gap:16px}
 .tfAreaPanel .icon{width:22px;height:22px}
-.tfATitle{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
-#app .tfAName{max-width:100%;min-height:0;padding:0;border:0;border-radius:6px;background:none;color:var(--text);font:700 24px/1.2 var(--font-tile);letter-spacing:-.01em;text-align:start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+/* the open area is the area card (Matt, 17 Nov): its own padding, corner and content; the folded ones keep theirs */
+#app .workoutPanel.tfAreaPanel{padding:0}
+#app .workoutPanel.tfAreaPanel.active{border-radius:28px}
+.tfAreaPanel .panelExpanded>.tfRoomTile{height:100%;box-sizing:border-box;background:none;box-shadow:none}
+#app.tfBoard .tfAreaPanel .tfRoomTile[data-rows="1"]{padding:10px}
+#app.tfBoard .tfAreas[data-rows="1"] .workoutPanel.tfAreaPanel.active{border-radius:24px}
 .tfAreaIcon{flex:none;border:0;padding:0;background:var(--hc-icon);color:var(--hc-icon-ink);--mdc-icon-size:22px}
 button.tfAreaIcon{cursor:pointer}
 .tfAreaGlyph{display:grid;place-items:center}
@@ -428,19 +423,6 @@ button.tfAreaIcon{cursor:pointer}
 #app.tfWeatherOpen .tfBento.tfPegs .wbWeather .wbNow{margin-bottom:auto}
 /* on the board Next hours' sky takes its cells' height; its 380 is for phones */
 #app.tfWeatherOpen .tfBento.tfPegs :is(.wbStripScroll,.wbBars .wbDayBars,.wbBars.wbTabbed .wbDayBars){min-height:0}
-/* the main: it opens its more-info */
-.tfABig{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:auto;min-height:0;height:auto;padding:0;border:0;border-radius:8px;background:none;color:var(--text);text-align:start;cursor:pointer}
-.tfABigMain{font:500 64px/1 var(--font-tile);letter-spacing:-.03em;white-space:nowrap}
-.tfABigMain.long{font-size:40px}
-.tfABigUnit{margin-inline-start:6px;font-size:24px;letter-spacing:0}
-.tfABigSub{max-width:100%;overflow:hidden;color:var(--muted);font:400 16px/1.2 var(--font);white-space:nowrap;text-overflow:ellipsis}
-/* the controls: two to a row inside the padding, so their icons line up with the name; the icon is the button */
-/* an open area's tiles always hold two rows' room (Matt, 4 Nov), one row on their bottom edge, so its reading stays where
-   two rows put it, however many tiles there are; the reading is one line under the number, cut with "…" */
-.tfATiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-height:calc(2 * var(--tile-min));align-content:end}
-.tfABig{max-width:100%}
-/* an area with no tiles keeps the same room under its reading */
-.panelExpanded:not(:has(.tfATiles)) .tfABig{margin-bottom:calc(2 * var(--tile-min) + 16px)}
 /* a folded area's number sits on the open area's number's baseline (Matt, 4 Nov), placed from the card's bottom as the
    open one is: 10 padding, two rows of tiles (120), 16, then the reading, whose number's baseline is 32.5 above its foot;
    the folded number's own baseline is 8.4 above its box's foot, so its box sits 170 up */
@@ -450,12 +432,6 @@ button.tfAreaIcon{cursor:pointer}
 #app.tfBoard .tfAreas[data-rows="4"] .tfACMain{position:absolute;left:10px;right:10px;bottom:164.1px;max-width:none;text-align:center}
 /* an open area with no tiles keeps their room under its reading at L too (12 apart there), so its number stays on the
    same line; a note under its name can push it lower (it never covers the note) */
-#app.tfBoard .tfAreas[data-rows="4"] .panelExpanded:not(:has(.tfATiles)) .tfABig{margin-bottom:calc(2 * var(--tile-min) + 12px)}
-.tfATile{display:grid;grid-template-columns:var(--chip-size) minmax(0,1fr);align-items:center;gap:12px;min-height:var(--tile-min);padding:var(--inset);border-radius:var(--r-tile)}
-.tfATile>:is(div,.tfName):last-child{min-width:0}
-.tfATile .tfIcon{border:0;padding:0;background:var(--hc-icon);color:var(--hc-icon-ink);cursor:pointer}
-.tfATile.on[data-light] .tfIcon{background:var(--light-soft);color:var(--light-ink)}
-.tfATile :is(.activityRowName,.activityRowMeta){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* folded (Matt's Figma "Area card accordions v04" 521:9673): 18 in at the top, 10 at the bottom; at the top the room's
    icon with its name under it (Inter 600 16), 6 apart, cut with "…" when it doesn't fit; the main (Geist 200 32) between;
    at the bottom the room's icons two by two as 60 tiles (icon 40, corner 16, glyph 22), one column of two when the card
@@ -773,27 +749,11 @@ button.tfAreaIcon{cursor:pointer}
 #app.tfBoard .tfDashBento[data-rows="3"] :is(.wbCompareWords,.wbCompareTemps){display:none}
 /* the areas: XS each room a tile (the open one its name and value); S the open room's name and 2 tiles, the others'
    name and value; M and L 4 tiles and a row of icons; XL as drawn */
-#app.tfBoard .tfAreas[data-rows="1"] .workoutPanel.tfAreaPanel{padding:10px}
-#app.tfBoard .tfAreas[data-rows="1"] .panelExpanded{display:grid;grid-template-columns:40px minmax(0,1fr);gap:0 12px;align-content:center}
-#app.tfBoard .tfAreas[data-rows="1"] :is(.panelExpanded>.workoutPanelTop,.tfACTop){display:contents}
-#app.tfBoard .tfAreas[data-rows="1"] .panelExpanded .tfAreaIcon{grid-row:span 2}
-#app.tfBoard .tfAreas[data-rows="1"] .tfATitle .tfAName{font-size:14px;line-height:20px;height:auto}
-#app.tfBoard .tfAreas[data-rows="1"] .tfABig{margin:0;flex-direction:row}
-#app.tfBoard .tfAreas[data-rows="1"] .tfABigMain{font-size:14px;line-height:18px;letter-spacing:0}
-#app.tfBoard .tfAreas[data-rows="1"] :is(.tfABigUnit){font-size:14px}
-#app.tfBoard .tfAreas[data-rows="1"] :is(.tfABigSub,.tfATiles,.tfACTiles,.sourceTag){display:none}
+#app.tfBoard .tfAreas[data-rows="1"] .tfACTop{display:contents}
+#app.tfBoard .tfAreas[data-rows="1"] .tfACTiles{display:none}
 #app.tfBoard .tfAreas[data-rows="1"] .tfACollapsed{display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:12px;align-content:center;padding:0}
 #app.tfBoard .tfAreas[data-rows="1"] .tfACollapsed .tfAreaIcon{grid-row:span 2}
 #app.tfBoard .tfAreas[data-rows="1"] :is(.tfACName,.tfACMain){margin:0;font-size:14px;line-height:18px;text-align:start;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#app.tfBoard .tfAreas:is([data-rows="2"],[data-rows="3"]) .tfABig{display:none}
-/* L: the room's big reading (temperature and humidity, or its main reading) in the room between its name and its tiles
-   (Matt, 6 Nov: there's space for it) */
-#app.tfBoard .tfAreas[data-rows="4"] .tfABig{flex:none;margin-top:auto;margin-bottom:auto}
-#app.tfBoard .tfAreas[data-rows="4"] .tfATiles{margin-top:0}
-#app.tfBoard .tfAreas[data-rows="4"] .tfABigMain{font-size:52px}
-#app.tfBoard .tfAreas[data-rows="4"] .panelExpanded{row-gap:12px}
-#app.tfBoard .tfAreas:is([data-rows="2"],[data-rows="3"],[data-rows="4"]) .tfATiles{margin-top:auto}
-#app.tfBoard .tfAreas[data-rows="2"] .tfATile:nth-child(n+3),#app.tfBoard .tfAreas:is([data-rows="3"],[data-rows="4"]) .tfATile:nth-child(n+5){display:none}
 #app.tfBoard .tfAreas[data-rows="2"] .tfACTiles{display:none}
 #app.tfBoard .tfAreas:is([data-rows="3"],[data-rows="4"]) .tfACTile:nth-child(n+3){display:none}
 #app.tfBoard .tfAreas:is([data-rows="3"],[data-rows="4"]) .tfACollapsed{justify-content:flex-start;gap:10px}
