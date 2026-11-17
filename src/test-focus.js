@@ -2274,15 +2274,17 @@ export function mountTestFocus(root, { config, getHass }) {
       });
       top = Math.max(...sky.map((g) => g.t));
     } else {
-      // Rows: each floor's name, then its areas a row at a time (Bento's big first area too). Fit together: the most columns
-      // (up to all that fit) that leave no gap, or in Bento one a card grows down into, so they make a neat block; any
-      // width left over stays empty (Matt, 17 Nov)
+      // Rows: each floor's name, then its areas a row at a time (Bento's big first area too). Fit together (Matt, 17 Nov:
+      // "make more rows for the cards, so the width the group takes up is smaller"): the fewest columns that keep the areas
+      // no taller than the cards stacked beside them (with none beside them, about as tall as they're wide), leaving no
+      // gap, or in Bento one a card grows down into; the width left over stays empty
       const fitCols = (f) => {
         if (!prefs.home?.fitTogether || phone) return n;
-        for (let c = n; c >= 1; c--) {
-          const cells = f.cards.length + (mixed && f.cards.length > 1 && c >= 2 ? 3 : 0), rows = Math.ceil(cells / c), holes = rows * c - cells;
-          if (holes === 0 || (bento && holes === 1 && rows > 1)) return c;
-        }
+        const besideH = side ? colB - gap - top : null;
+        const shape = (c) => { const cells = f.cards.length + (mixed && f.cards.length > 1 && c >= 2 ? 3 : 0), rows = Math.ceil(cells / c); return { holes: rows * c - cells, rows, h: headH(f) + rows * ch + (rows - 1) * gap, w: c * cw + (c - 1) * gap }; };
+        const neat = (x) => x.holes === 0 || (bento && x.holes === 1 && x.rows > 1);
+        for (let c = 1; c <= n; c++) { const x = shape(c); if (neat(x) && x.h <= (besideH ?? x.w)) return c; }
+        for (let c = 1; c <= n; c++) { const x = shape(c); if (x.h <= (besideH ?? x.w)) return c; }
         return n;
       };
       floors.forEach((f, i) => {
