@@ -1,15 +1,17 @@
 // A tweaker for the load-in (Matt, 17 Nov: "build me a little tweaker that I can use, which we can then remove from
 // the build"). Only on the dev server (npm run dev): demo-shell.js loads it behind import.meta.env.DEV, so the built
 // site never has it. To take it out for good: delete this file and its two lines in demo-shell.js.
-import { INTRO, INTRO_DEFAULTS, EASES, playIntro } from './intro.js';
+import { INTRO, INTRO_DEFAULTS, EASES, playIntro, introTimes } from './intro.js';
 
 const KEY = 'homecore-demo-intro';
 // [key, label, min, max, step, unit] or [key, label, options]
 const GROUPS = [
   ['Blue sky', [['skyHold', 'Hold', 0, 1500, 10, 'ms'], ['skyFade', 'Fade', 0, 1500, 10, 'ms'], ['skyEase', 'Ease', Object.keys(EASES)]]],
-  ['Cards', [['cardStart', 'Start', 0, 1200, 10, 'ms'], ['cardStagger', 'Stagger', 0, 150, 1, 'ms'], ['cardMax', 'Last starts by', 0, 1500, 10, 'ms'],
+  ['Greeting, then the name', [['greetStart', 'Greeting starts', 0, 800, 10, 'ms'], ['greetStagger', 'Greeting stagger', 0, 60, 1, 'ms'],
+    ['nameGap', 'Name after it', -300, 600, 10, 'ms'], ['nameStagger', 'Name stagger', 0, 100, 1, 'ms']]],
+  ['Cards', [['cardsAfter', 'After the name starts', -300, 1000, 10, 'ms'], ['cardStagger', 'Stagger', 0, 150, 1, 'ms'], ['cardSpread', 'All begun within', 0, 1500, 10, 'ms'],
     ['cardDur', 'Length', 0, 1500, 10, 'ms'], ['cardRise', 'Rise', 0, 80, 1, 'px'], ['cardScale', 'Start size', 70, 110, 1, '%'], ['cardEase', 'Ease', Object.keys(EASES)]]],
-  ['Letters', [['letterAfter', 'After its card', 0, 600, 10, 'ms'], ['letterStagger', 'Stagger', 0, 100, 1, 'ms'], ['letterMax', 'Last starts by', 0, 1500, 10, 'ms'],
+  ['Letters', [['letterAfter', 'After its card', 0, 600, 10, 'ms'], ['letterStagger', 'Stagger', 0, 100, 1, 'ms'], ['letterSpread', 'All begun within', 0, 1000, 10, 'ms'],
     ['letterDur', 'Length', 0, 1500, 10, 'ms'], ['letterTurn', 'Turn', -360, 360, 5, '°'], ['letterAxis', 'Axis', ['X', 'Y']], ['letterRise', 'Rise', 0, 100, 1, '% of a letter'],
     ['letterEase', 'Ease', Object.keys(EASES)], ['words', 'Which words', ['names', 'all']]]],
 ];
@@ -17,7 +19,7 @@ const GROUPS = [
 export function mountIntroTweaker(root, app) {
   const style = document.createElement('style');
   style.textContent = `
-    .hcTweak{position:fixed;z-index:400;left:96px;bottom:16px;width:300px;max-height:calc(100vh - 32px);overflow:auto;padding:14px 16px;border-radius:20px;
+    .hcTweak{position:fixed;z-index:400;right:16px;bottom:72px;width:300px;max-height:calc(100vh - 88px);overflow:auto;padding:14px 16px;border-radius:20px;
       background:var(--card);box-shadow:0 8px 32px rgba(0,0,0,.18),var(--hc-hair-all,0 0 0 .5px rgba(0,0,0,.1));color:var(--text);font:400 13px/1.3 var(--font);scrollbar-width:thin}
     .hcTweak.min{width:auto;padding:8px 10px}
     .hcTweak.min>:not(.hcTweakHead){display:none}
@@ -47,8 +49,7 @@ export function mountIntroTweaker(root, app) {
     total();
   };
   const total = () => {
-    const c = INTRO, last = Math.max(c.skyHold + c.skyFade, c.cardMax + c.cardDur, c.letterMax + c.letterDur);
-    const el = box.querySelector('[data-total]'); if (el) el.textContent = 'All in: ' + (last / 1000).toFixed(2) + ' s';
+    const el = box.querySelector('[data-total]'); if (el) el.textContent = 'All in: ' + (introTimes(INTRO).end / 1000).toFixed(2) + ' s';
   };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(INTRO)); } catch (_e) { /* this visit only */ } };
   const replay = () => { window.scrollTo(0, 0); playIntro(root, app, INTRO); };
