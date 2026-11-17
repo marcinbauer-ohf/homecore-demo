@@ -546,8 +546,9 @@ button.tfAreaIcon{cursor:pointer}
 @media(min-width:901px){
   #app.tfDash .tfAreaGallery{overflow-x:auto;scrollbar-width:none}
   #app.tfDash .tfAreaGallery::-webkit-scrollbar{display:none}
-  #app.tfDash .tfAreaPanel.active{flex:1 0 409px}
-  #app.tfDash .tfAreaPanel:not(.active){flex:0 0 128px}
+  /* the open area two columns wide (set by the board), the folded ones sharing what's left over (Matt, 17 Nov) */
+  #app.tfDash .tfAreaPanel.active{flex:0 0 var(--area-open,409px)}
+  #app.tfDash .tfAreaPanel:not(.active){flex:1 0 128px}
 }
 /* the summaries: each as wide as its words (at least 200), in even rows (the board picks how many to a row), the bar as
    wide as they are; two to a row on phones */

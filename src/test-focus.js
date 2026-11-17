@@ -1768,7 +1768,7 @@ export function mountTestFocus(root, { config, getHass }) {
   // a card of tiles fills its height (Matt, 2 Nov): as many rows as fit at 56 or taller, every row the same height
   const FILL_MIN = 56;
   const boardName = (key) => BOARD_NAMES[key] || (key.startsWith('room:') ? areaRooms.find((r) => 'room:' + r.id === key)?.name || 'Area' : nameOf(key));
-  const AREA_OPEN = 409, AREA_FOLDED = 128;
+  const AREA_FOLDED = 128;
   let editing = false, drag = null, boardOpen = null, fitQueued = false, lastPlaced = new Map(), boardRows = 0, boardTop = 0;
   // the page's header, above the grid at its own size (the cards' rules: padding 10, tiles 60, so a bar of summaries is
   // 80 or 140 and never fits the grid's rows; Matt, 27 Oct: "we have rules to follow")
@@ -1820,7 +1820,10 @@ export function mountTestFocus(root, { config, getHass }) {
     // the areas: as wide as they need (Matt, 11 Nov: no width of their own to pick), so as wide as their rooms, up to the
     // board's edge from where they sit; the rooms that don't fit scroll
     if (it.span === 'areas') {
-      const need = Math.ceil((AREA_OPEN + Math.max(0, areasShown().length - 1) * (AREA_FOLDED + PEG_GAP) + PEG_GAP) / (w + PEG_GAP));
+      // the open area two columns wide, whatever the card's width (Matt, 17 Nov: it took all the spare room, 2.7 wide)
+      const open = 2 * w + PEG_GAP;
+      it.el.style.setProperty('--area-open', open + 'px');
+      const need = Math.ceil((open + Math.max(0, areasShown().length - 1) * (AREA_FOLDED + PEG_GAP) + PEG_GAP) / (w + PEG_GAP));
       return Math.max(Math.min(n, 2), Math.min(need, n - (dashPrefs().cells.areas?.col || 0)));
     }
     return Math.min(n, dashPrefs().spans[it.key] ?? it.span);
@@ -1912,7 +1915,16 @@ export function mountTestFocus(root, { config, getHass }) {
   // saves where every card is, with the board's width in pegs so a phone can read them in the same order
   const saveCells = (dash, cells) => saveDash({ ...dash, cells, pegs: pegsFor(grid.clientWidth).n });
   // lays the board out on its cells: the name and the summaries first, then the cards (placeCards)
+  // the Areas card shows all of its open area: scrolled just enough when it's cut off at an edge (Matt, 17 Nov)
+  function showOpenArea(smooth) {
+    const gal = grid?.querySelector('.tfAreas[data-k="areas"] .tfAreaGallery'), on = gal?.querySelector('.tfAreaPanel.active');
+    if (!on || gal.scrollWidth <= gal.clientWidth) return;
+    const g = gal.getBoundingClientRect(), o = on.getBoundingClientRect();
+    const by = o.right > g.right ? o.right - g.right : o.left < g.left ? o.left - g.left : 0;
+    if (by) gal.scrollBy({ left: by, behavior: smooth ? 'smooth' : 'auto' });
+  }
   function layoutBoard() {
+    requestAnimationFrame(() => showOpenArea(false)); setTimeout(() => showOpenArea(false), 360); // and once its width has eased in
     if (!testFocus || !grid) return;
     // a phone is the same board two columns wide (Matt, 1 Nov: one rule everywhere, so Smalls stack beside a Medium
     // there too), its cards in the phone's order and not edited there
@@ -4154,6 +4166,7 @@ export function mountTestFocus(root, { config, getHass }) {
     // in place, so the accordion slides like the move panels
     grid.querySelectorAll('.tfAreaPanel').forEach((p) => { const on = p === panel; p.classList.toggle('active', on); p.setAttribute('aria-expanded', String(on)); p.querySelector('.panelExpanded')?.toggleAttribute('inert', !on); });
     units.set('areas', areasHtml(grid.querySelector('[data-k="areas"]')?.style.order || 1));
+    setTimeout(() => showOpenArea(true), 340); // once it has opened out
   }
   // what a bar sets, from 0–1 along it
   const DRAG = {
