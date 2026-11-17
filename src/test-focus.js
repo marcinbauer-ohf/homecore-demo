@@ -3718,7 +3718,7 @@ export function mountTestFocus(root, { config, getHass }) {
     const s = ACTION_DOMAINS.includes(d) || TOGGLES.includes(d) ? specFor(id) : quickSpec(id);
     const pop = popOf(id);
     // its pages: the drawn ones (a light's Colour and Control) or Control as it was, then Info
-    const pages = [...(pop ? pop.pages.map((pg) => ({ name: pg.name, svg: pg.svg, html: pg.space + '<div class="tfMoreCtl">' + pg.rows.filter(Boolean).join('') + '</div>' }))
+    const pages = [...(pop ? pop.pages.map((pg) => ({ name: pg.name, svg: pg.svg, html: pg.space + '<div class="tfMoreCtl"' + lightAttrs(id).replace(' data-light', '') + '>' + pg.rows.filter(Boolean).join('') + '</div>' }))
       : [{ name: 'Control', svg: TUNE_SVG, html: moreSpace(id) + (d === 'plant' ? plantProblems(id).join('') : '') + s.sections.filter(Boolean).join('') }]), { name: 'Info', svg: INFO_SVG, html: infoOf(id) }];
     if (more && more.page == null) more.page = pop?.start || 0; // a light opens on its Control page, after Colour
     if (more) more.pages = pages.length;

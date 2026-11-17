@@ -1143,6 +1143,13 @@ button.tfAreaIcon{cursor:pointer}
 .tfMoreCtl{display:flex;flex-direction:column;gap:14px;flex:0 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
 .tfMoreCtl::-webkit-scrollbar{display:none}
 .tfMoreCtl:empty{display:none}
+/* the sliders' glow and hold (the Motion Lab's slider glow) reach out past a track: the pages and the rows' block keep 12
+   of room round what they hold (the held glow reaches 13), so nothing clips it, without moving anything (17 Nov: "the
+   highlighting… is broken"); the pages are 28 apart, so each is still a page's width (with its room) along */
+#app .tfMoreBackdrop:not(.wide) .tfMorePages{margin:-14px;padding:14px;gap:28px;scroll-padding-inline:14px}
+#app .tfMoreBackdrop:not(.wide) .tfMorePop>.tfMorePage:not([aria-label="Info"]){overflow:visible}
+#app .tfMoreBackdrop:not(.wide) :is(.tfMorePages:not(.tfMorePop)>.tfMorePage,.tfMorePop>.tfMorePage[aria-label="Info"]){margin:-14px;padding:14px}
+.tfMoreCtl{margin:-14px;padding:14px}
 .tfMoreCtl>*{flex:none}
 /* a row named above it: the muted 14 name, 6 over its control */
 .tfMoreField{display:flex;flex-direction:column;gap:6px}
