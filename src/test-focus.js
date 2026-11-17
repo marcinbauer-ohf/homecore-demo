@@ -2359,7 +2359,7 @@ export function mountTestFocus(root, { config, getHass }) {
     editing = on;
     if (!on) { drag = null; trayPicking = tilePicking = false; closeBoardMenu(); }
     layoutBoard();
-    if (on) editStart = JSON.stringify(prefs);
+    if (on) { editStart = JSON.stringify(prefs); trayPage(tray, 'Edit custom dashboard', null); } // a phone starts at the list
     else if (editStart && JSON.stringify(prefs) !== editStart) toast('Changes saved');
   }
   // a card's ⋯: its height (XS to XL), its width (a tile or a card), a cell left, right, up or down, Energy today's
@@ -2619,6 +2619,17 @@ export function mountTestFocus(root, { config, getHass }) {
   const PICK_DOMAINS = /^(light|switch|cover|climate|fan|lock|valve|media_player|humidifier|vacuum|scene|script|alarm_control_panel|water_heater|input_boolean)\./;
   const TRAY_TABS = [['page', 'Page'], ['cards', 'Cards'], ['areas', 'Areas'], ['favs', 'Favourites']];
   let trayTab = 'page';
+  /* on a phone a tray's tabs are a list, each opening its own page with ‹ back to the list, as HomeCore settings and
+     Settings (Matt, 17 Nov: "the trays too"); wider, the tabs as they were */
+  const trayListHtml = (tabs, attr) => '<section class="hcRowsCard hcTrayList">' + tabs.map(([k, t]) => '<button class="hcRow hcConfigRow" type="button" ' + attr + '="' + k + '">' +
+    '<span class="hcRowText"><span class="hcRowName">' + esc(t) + '</span></span><span class="hcRowEnd">' + CHEVRON + '</span></button>').join('') + '</section>';
+  // which of its pages a phone shows: the list (null) or a tab's; its head says which, with ‹ back to the list
+  const trayPage = (el, title, k, name) => {
+    el.classList.toggle('hcTrayIn', Boolean(k));
+    el.querySelector('.tfTrayHead .activityTitle').textContent = k ? name : title;
+    el.querySelector('.tfTrayInner').scrollTop = 0;
+  };
+  const TRAY_BACK = '<button class="back hcTrayBack" type="button" data-tray-back aria-label="Back">' + BACK + '</button>';
   // which tab each of the tray's sections sits under
   const trayTabOf = (sec) => (sec.matches('.hcTraySums,[data-tray="welcome"],[data-tray="phone"]') ? 'page'
     : sec.querySelector('[data-room-add]') ? 'areas' : sec.querySelector('[data-tray="favs"]') ? 'favs' : 'cards');
@@ -2626,6 +2637,7 @@ export function mountTestFocus(root, { config, getHass }) {
     const inner = tray.querySelector('.tfTrayInner'), bar = tray.querySelector('.hcTrayTabs'), mark = bar.querySelector('.rubberIndicator');
     const head = inner.querySelector('.tfTrayHead');
     if (head.nextElementSibling !== bar) head.after(bar); // the tabs straight under the head (Summaries is added after it)
+    const list = inner.querySelector('.hcTrayList'); if (bar.nextElementSibling !== list) bar.after(list); // a phone's list of them
     let first = true;
     inner.querySelectorAll(':scope>.tfTraySection').forEach((sec) => { sec.hidden = trayTabOf(sec) !== trayTab; sec.classList.toggle('hcFirst', !sec.hidden && first); if (!sec.hidden) first = false; });
     bar.querySelectorAll('[data-tray-tab]').forEach((b) => { const on = b.dataset.trayTab === trayTab; b.classList.toggle('active', on); b.setAttribute('aria-selected', String(on)); });
@@ -2638,10 +2650,11 @@ export function mountTestFocus(root, { config, getHass }) {
   const tray = Object.assign(document.createElement('aside'), { className: 'tfEditTray' });
   tray.setAttribute('aria-label', 'Edit custom dashboard');
   tray.innerHTML = '<button class="tfTrayTuck" type="button" data-tray-tuck></button>' +
-    '<div class="tfTrayInner"><div class="tfTrayHead"><div class="activityTitle">Edit custom dashboard</div><button class="pill" type="button" data-tray-done>Done</button></div>' +
+    '<div class="tfTrayInner"><div class="tfTrayHead">' + TRAY_BACK + '<div class="activityTitle">Edit custom dashboard</div><button class="pill" type="button" data-tray-done>Done</button></div>' +
     // tabs instead of one long scroll (Matt, 12 Nov), HomeCore settings' tabs
     '<div class="tabs rubberTabs hcTrayTabs" role="tablist" aria-label="Edit custom dashboard"><div class="rubberIndicator" aria-hidden="true"></div>' +
       TRAY_TABS.map(([k, t], i) => '<button class="tab segBtn' + (i ? '' : ' active') + '" type="button" role="tab" aria-selected="' + !i + '" data-tray-tab="' + k + '">' + t + '</button>').join('') + '</div>' +
+    trayListHtml(TRAY_TABS, 'data-tray-go') +
     '<section class="tfTraySection" data-tray="welcome"></section>' +
     '<section class="tfTraySection" data-tray="cards"></section>' +
     '<section class="tfTraySection" data-tray="weather"></section>' +
@@ -2776,6 +2789,7 @@ export function mountTestFocus(root, { config, getHass }) {
       '<p class="tfTrayNote hcHeAreasNote">You can rearrange your floors and areas in the order that best represents your house on the <button type="button" class="hcHeLink" data-oops>areas page</button>.</p>' +
       '<div class="tabs rubberTabs hcTrayTabs" role="tablist" aria-label="Edit Home page"><div class="rubberIndicator" aria-hidden="true"></div>' +
         tabs.map(([k, t]) => '<button class="tab segBtn' + (k === homeTab ? ' active' : '') + '" type="button" role="tab" aria-selected="' + (k === homeTab) + '" data-he-tab="' + k + '">' + t + '</button>').join('') + '</div>' +
+      trayListHtml(tabs, 'data-he-go') +
       '<div class="hcHeTabBody" role="tabpanel">' + bodies[homeTab] + '</div>';
     placeHomeMark(false);
     fillIcons(homeTray);
@@ -2795,10 +2809,10 @@ export function mountTestFocus(root, { config, getHass }) {
     if (pen && on) { penHome = pen.parentElement; head.appendChild(pen); }
     if (pen && !on && penHome) penHome.appendChild(pen);
     if (pen) { pen.classList.toggle('active', on); pen.setAttribute('aria-pressed', String(on)); pen.setAttribute('aria-label', on ? 'Done editing Home' : 'Edit Home page'); pen.title = on ? 'Done' : 'Edit'; pen.innerHTML = on ? TICK : PENCIL; }
-    if (on) { homeStart = JSON.stringify(prefs); drawHomeTray(); }
+    if (on) { homeStart = JSON.stringify(prefs); drawHomeTray(); trayPage(homeTray, 'Edit Home page', null); } // a phone starts at the list
     else if (homeStart && JSON.stringify(prefs) !== homeStart) toast('Changes saved');
   }
-  homeTray.innerHTML = '<div class="tfTrayInner"><div class="tfTrayHead"><div class="activityTitle">Edit Home page</div></div><div class="hcHeBody" data-he-body></div></div>';
+  homeTray.innerHTML = '<div class="tfTrayInner"><div class="tfTrayHead">' + TRAY_BACK + '<div class="activityTitle">Edit Home page</div></div><div class="hcHeBody" data-he-body></div></div>';
   app.appendChild(homeTray);
   // the (i)'s popover: what the setting does, and Learn more; closes on a tap outside it or Escape
   let infoFor = null;
@@ -2844,6 +2858,9 @@ export function mountTestFocus(root, { config, getHass }) {
   homeTray.addEventListener('click', (ev) => {
     const t = ev.target;
     const info = t.closest('[data-info]'); if (info) { openInfo(info); return; }
+    const heGo = t.closest('[data-he-go]');
+    if (heGo) { homeTab = heGo.dataset.heGo; homePicking = false; closeInfo(); drawHomeTray(); trayPage(homeTray, 'Edit Home page', homeTab, heGo.textContent); return; }
+    if (t.closest('[data-tray-back]')) { closeInfo(); trayPage(homeTray, 'Edit Home page', null); return; }
     const tabBtn = t.closest('[data-he-tab]');
     if (tabBtn) { const m = homeTray.querySelector('.hcTrayTabs .rubberIndicator'), from = { left: m.offsetLeft, width: m.offsetWidth }; homeTab = tabBtn.dataset.heTab; homePicking = false; closeInfo(); drawHomeTray(); placeHomeMark(true, from); homeTray.querySelector('.tfTrayInner').scrollTop = 0; return; }
     if (t.closest('[data-he-welcome]')) { homePrefs({ welcome: !welcomeOn() }); return; }
@@ -2933,6 +2950,8 @@ export function mountTestFocus(root, { config, getHass }) {
     const t = ev.target.closest('button');
     if (!t) return;
     if (t.hasAttribute('data-tray-tab')) { trayTab = t.dataset.trayTab; showTrayTab(true); tray.querySelector('.tfTrayInner').scrollTop = 0; return; }
+    if (t.hasAttribute('data-tray-go')) { trayTab = t.dataset.trayGo; showTrayTab(false); trayPage(tray, 'Edit custom dashboard', trayTab, TRAY_TABS.find(([k]) => k === trayTab)[1]); return; }
+    if (t.hasAttribute('data-tray-back')) { trayPage(tray, 'Edit custom dashboard', null); return; }
     if (t.hasAttribute('data-tray-done')) setEditing(false);
     else if (t.hasAttribute('data-info')) openInfo(t);
     else if (t.hasAttribute('data-dash-sums')) { saveDash({ ...boardPrefs(), hidden: boardPrefs().hidden.filter((k) => k !== 'sums'), sumsOff: !prefs.dash?.sumsOff }); refresh(); renderTray(); }

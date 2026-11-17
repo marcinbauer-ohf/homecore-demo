@@ -48,7 +48,9 @@
 .hcDrawerLine{height:0;margin:8px 10px;border-top:.5px solid var(--divider)}
 .hcDrawerMe{margin-top:auto}
 @media(max-width:620px){
-  .hcRail,.hcTopRight{display:none}
+  .hcRail{display:none}
+  /* the edit pencil stays top right on a phone, or neither page could be edited there (Matt, 17 Nov) */
+  #app.hcDemo .hcTopRight{top:12px;right:16px}
   #app.hcDemo .shell{padding-left:0}
   #app.hcDemo .tfMiniPhone{margin-left:0}
   #app.hcDemo .bottomNav{display:flex}

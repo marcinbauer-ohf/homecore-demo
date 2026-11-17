@@ -1073,6 +1073,18 @@ button.tfAreaIcon{cursor:pointer}
 .tfEditTray .hcTrayTabs .rubberIndicator{background:var(--text)}
 .tfEditTray .hcTrayTabs .tab.active{color:var(--card)}
 .tfEditTray .tfTraySection[hidden]{display:none!important}
+/* a phone: the tray's tabs as a list, each opening its own page with ‹ back to the list (Matt, 17 Nov) */
+#app .tfEditTray :is(.hcTrayList,.hcTrayBack){display:none}
+@media(max-width:620px){
+  #app .tfEditTray .hcTrayTabs{display:none}
+  #app .tfEditTray:not(.hcTrayIn) .hcTrayList{display:grid;flex:none;padding:0}
+  #app .tfEditTray .hcTrayList .hcConfigRow{grid-template-columns:minmax(0,1fr) auto;margin-inline:-10px;width:calc(100% + 20px)}
+  #app .tfEditTray:not(.hcTrayIn) :is(.tfTraySection,.hcHeTabBody){display:none!important}
+  #app .tfEditTray.hcTrayIn .hcHeAreasNote{display:none}
+  #app .tfEditTray.hcTrayIn .hcTrayBack{display:inline-flex;flex:none;width:40px;height:40px;margin-block:-4px}
+  #app .tfEditTray.hcTrayIn .tfTrayHead{justify-content:flex-start;gap:12.8px}
+  #app .tfEditTray.hcTrayIn .tfTrayHead>:last-child:not(.activityTitle){margin-left:auto}
+}
 /* Edit Home page in tabs, as the dashboard's tray: the note, the tabs, then the open tab's settings */
 .hcHeTabBody{display:flex;flex-direction:column;gap:8px}
 .hcHomeTray .hcTrayTabs{margin:0 0 8px}
