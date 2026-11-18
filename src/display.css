@@ -646,8 +646,7 @@ button.tfAreaIcon{cursor:pointer}
    bottom; M its devices under it (up to four, 12 apart); L and XL the reading 52 / 64 with its second under it (the head
    then the name only). The whole tile opens the room's page; each device button that device's control */
 .tfRoomTile{cursor:pointer}
-.tfRoomTile .tfRoomIcon{border:0;padding:0;background:var(--hc-icon);color:var(--hc-icon-ink)}
-.tfRoomTile button.tfRoomIcon{cursor:pointer}
+#app .tfRoomTile .tfIcon.tfRoomIcon{border:0;padding:0;background:none!important;box-shadow:none!important;color:var(--hc-icon-ink)} /* no chip (Matt, 18 Nov) */
 .tfRoomInline,.tfRoomSub{display:none}
 .tfRoomReading{display:flex;flex-direction:column;align-items:flex-start;align-self:flex-start;gap:4px;min-width:0;max-width:100%;padding:0;border:0;border-radius:8px;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
 .tfRoomBig{overflow:hidden;color:var(--text);font:500 36.8px/36.8px var(--font-tile);letter-spacing:-.74px;white-space:nowrap;text-overflow:ellipsis}
