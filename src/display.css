@@ -652,6 +652,8 @@ button.tfAreaIcon{cursor:pointer}
 /* the big reading just under the name, 20% smaller (Matt, 17 Nov: "line up the large data point"); the devices stay at
    the foot */
 .tfRoomTile>.tfActionHead{margin-bottom:0}
+/* the room's name as big as a card's title (Matt, 18 Nov: "the same size as the other headers for cards") */
+#app .tfRoomTile>.tfActionHead .tfName>.activityRowName{font:500 18px/1.2 var(--font-tile);letter-spacing:-.01em}
 .tfRoomTile:not([data-rows="1"]) :is(.tfRoomDevices,.tfRoomHeads){margin-top:auto}
 .tfRoomSub{overflow:hidden;color:var(--muted);font:400 16px/19px var(--font);white-space:nowrap;text-overflow:ellipsis}
 .tfRoomDevices{display:flex;gap:12px}
