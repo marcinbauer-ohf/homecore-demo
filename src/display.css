@@ -658,12 +658,6 @@ button.tfAreaIcon{cursor:pointer}
 /* the callout's label above it (Matt, 18 Nov: "Water leak" above "Dry") */
 .tfRoomLabel{max-width:100%;overflow:hidden;color:var(--muted);font:500 14px/18px var(--font-tile);white-space:nowrap;text-overflow:ellipsis}
 .tfRoomShort{display:none}
-.tfRoomMetaLabel{display:none}
-/* a small narrow card: the label in the head, under the room's name, and the callout big under it (there's no room for
-   the label above the callout as well) */
-#app.tfBoard .tfRoomTile[data-cols="1"][data-rows="2"]:has(.tfRoomReading) .tfRoomMetaFull{display:none}
-#app.tfBoard .tfRoomTile[data-cols="1"][data-rows="2"]:has(.tfRoomReading) .tfRoomMetaLabel{display:inline}
-#app.tfBoard .tfRoomTile[data-cols="1"][data-rows="2"] .tfRoomLabel{display:none}
 /* the strip that switches between them, at the foot of the page while Matt chooses */
 .hcAreaStyles{position:fixed;z-index:390;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;align-items:center;gap:2px;padding:4px;border-radius:16px;background:var(--card);box-shadow:0 8px 32px rgba(0,0,0,.16),inset 0 0 0 .5px var(--line);font:600 13px/1 var(--font-tile);color:var(--text);white-space:nowrap}
 .hcAreaStyles>span{padding:0 8px 0 8px;color:var(--muted)}
@@ -707,30 +701,49 @@ button.tfAreaIcon{cursor:pointer}
 #app.tfBoard .tfRoomTile[data-cols="2"][data-rows="2"] .tfRoomDev:nth-child(n+3){display:none}
 #app.tfBoard .tfRoomTile:not([data-cols="1"]):is([data-rows="2"],[data-cols="2"][data-rows="3"]):has(.tfRoomDevices) .tfRoomInline{display:inline}
 #app.tfBoard .tfRoomTile:not([data-cols="1"]):is([data-rows="2"],[data-cols="2"][data-rows="3"]):has(.tfRoomDevices) .tfRoomReading{display:none}
-/* the four area card layouts to try (Matt, 18 Nov), on the one-column L and XL cards (Home's, and every card on a
-   phone), and the wide ones the same way (a wide card's devices are icons too in Icons and Panel); Icons is the narrow
-   cards as they were */
-#app.tfBoard .tfRoomTile:not([data-cols="1"]):is([data-rows="4"],[data-rows="5"]):is([data-style="icons"],[data-style="panel"]) .tfRoomHeads{display:none}
-#app.tfBoard .tfRoomTile:not([data-cols="1"]):is([data-rows="4"],[data-rows="5"]):is([data-style="icons"],[data-style="panel"]) .tfRoomDevices{display:flex}
-#app.tfBoard .tfRoomTile:is([data-rows="4"],[data-rows="5"]):is([data-style="rows"],[data-style="pills"]) .tfRoomDevices{display:none}
-#app.tfBoard .tfRoomTile:is([data-rows="4"],[data-rows="5"]):is([data-style="rows"],[data-style="pills"]) .tfRoomHeads{display:grid;gap:8px}
-/* Rows: icon, name and state, one under another; two at L, four at XL */
-#app.tfBoard .tfRoomTile[data-cols="1"]:is([data-rows="4"],[data-rows="5"])[data-style="rows"] .tfRoomHeads{grid-template-columns:minmax(0,1fr)}
-#app.tfBoard .tfRoomTile[data-cols="1"][data-rows="4"][data-style="rows"] .tfRoomDev:nth-child(n+3){display:none}
+/* the area cards (Matt, 18 Nov), in four layouts to try, every card the same way. At every size but the smallest the
+   callout is in the card's body, its label right above it, never in the head under the room's name ("this shouldn't be
+   there"); a device's icon turns it on and off (no state on it: Matt, 18 Nov). As many devices show as fit, never cut. Small cards and the wide one (a floor's first, as tall as the others)
+   have their devices beside the callout; Medium and Large narrow ones under it. Icons: the icons. Rows: icon, name and
+   state. Panel: the callout in a panel of its own, the icons. Pills: each device's icon and state in a pill */
+#app.tfBoard .tfRoomTile[data-style]:not([data-rows="1"]) .tfActionHead .activityRowMeta{display:none!important}
+#app.tfBoard .tfRoomTile[data-style]:not([data-rows="1"]) .tfRoomReading{display:flex!important}
+/* which of the two shows: the icons (Icons, Panel) or the devices by name (Rows, Pills) */
+#app.tfBoard .tfRoomTile[data-style]:not([data-rows="1"]):is([data-style="icons"],[data-style="panel"]) .tfRoomHeads{display:none!important}
+#app.tfBoard .tfRoomTile[data-style]:not([data-rows="1"]):is([data-style="rows"],[data-style="pills"]) .tfRoomDevices{display:none!important}
+#app.tfBoard .tfRoomTile[data-style]:not([data-rows="1"]):is([data-style="icons"],[data-style="panel"]) .tfRoomDevices{display:flex!important;flex-wrap:wrap;align-content:flex-start;gap:8px 12px;max-height:40px;overflow:hidden}
+#app.tfBoard .tfRoomTile[data-style]:not([data-rows="1"]):is([data-style="rows"],[data-style="pills"]) .tfRoomHeads{display:grid!important;grid-template-columns:minmax(0,1fr);grid-auto-rows:40px;gap:8px 16px;max-height:40px;overflow:hidden}
+/* beside: the head across the top, the callout bottom left, the devices bottom right */
+#app.tfBoard .tfRoomTile[data-style]:is([data-rows="2"],:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"])){display:grid!important;grid-template-columns:minmax(0,max-content) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:8px 16px}
+#app.tfBoard .tfRoomTile[data-style]:is([data-rows="2"],:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"]))>.tfActionHead{grid-column:1/-1}
+#app.tfBoard .tfRoomTile[data-style]:is([data-rows="2"],:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"])) .tfRoomReading{grid-column:1;grid-row:2;align-self:end}
+#app.tfBoard .tfRoomTile[data-style]:is([data-rows="2"],:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"])) :is(.tfRoomDevices,.tfRoomHeads){grid-column:2;grid-row:2;align-self:end;margin:0!important}
+#app.tfBoard .tfRoomTile[data-style]:is([data-rows="2"],:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"])) .tfRoomDevices{justify-content:flex-end}
+#app.tfBoard .tfRoomTile[data-style]:is([data-rows="2"],:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"])) .tfRoomHeads{grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr))!important}
+#app.tfBoard .tfRoomTile[data-style]:is([data-rows="2"],:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"]))[data-style="pills"] .tfRoomHeads{grid-template-columns:repeat(auto-fill,minmax(min(104px,100%),1fr))!important}
+/* Small: the callout a little smaller so the label fits above it */
+#app.tfBoard .tfRoomTile[data-style][data-rows="2"] .tfRoomReading{gap:2px}
+#app.tfBoard .tfRoomTile[data-style][data-rows="2"] .tfRoomBig{font-size:30px;line-height:30px;letter-spacing:-.6px}
+#app.tfBoard .tfRoomTile[data-style][data-rows="2"] .tfRoomSub{display:none!important}
+/* the wide card at Medium and Large: its readings under the callout; two rows of devices by name, at Large four */
+#app.tfBoard .tfRoomTile[data-style]:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"]) .tfRoomSub{display:block}
+#app.tfBoard .tfRoomTile[data-style]:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"]):is([data-style="rows"],[data-style="pills"]) .tfRoomHeads{max-height:88px}
+#app.tfBoard .tfRoomTile[data-style]:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"]):is([data-rows="4"],[data-rows="5"]):is([data-style="rows"],[data-style="pills"]) .tfRoomHeads{max-height:184px}
+/* under: Medium without the room's other readings, one row of devices; Large two by name, XL four */
+#app.tfBoard .tfRoomTile[data-style][data-cols="1"][data-rows="3"] .tfRoomSub{display:none!important}
+#app.tfBoard .tfRoomTile[data-style][data-cols="1"]:is([data-rows="3"],[data-rows="4"],[data-rows="5"]) :is(.tfRoomDevices,.tfRoomHeads){margin-top:auto}
+#app.tfBoard .tfRoomTile[data-style][data-cols="1"]:is([data-rows="4"],[data-rows="5"]):is([data-style="rows"],[data-style="pills"]) .tfRoomHeads{max-height:88px}
+#app.tfBoard .tfRoomTile[data-style][data-cols="1"][data-rows="5"]:is([data-style="rows"],[data-style="pills"]) .tfRoomHeads{max-height:184px}
+/* Panel: the callout in its own panel (its corner the card's less the card's 18 in) on Large and the wide card */
+:is(#app.tfBoard .tfRoomTile[data-style][data-cols="1"]:is([data-rows="4"],[data-rows="5"]),#app.tfBoard .tfRoomTile[data-style]:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"]))[data-style="panel"] .tfRoomReading{align-self:stretch;max-width:none;padding:12px 14px;border-radius:10px;background:var(--tile);box-shadow:inset 0 0 0 .2px var(--line),inset 0 -.4px 0 var(--line)}
+#app.tfBoard .tfRoomTile[data-style]:not([data-cols="1"]):is([data-rows="3"],[data-rows="4"],[data-rows="5"])[data-style="panel"] .tfRoomReading{align-self:end}
 /* Pills: each device the icon with its short state beside it, in a pill as tall as the icon, its corner the icon's */
-#app.tfBoard .tfRoomTile[data-style="pills"] .tfRoomDev{gap:8px;padding-right:10px;border-radius:var(--r-inner);background:var(--tile);box-shadow:inset 0 0 0 .2px var(--line),inset 0 -.4px 0 var(--line)}
-#app.tfBoard .tfRoomTile[data-style="pills"] .tfRoomDev::before{display:none}
-#app.tfBoard .tfRoomTile[data-style="pills"] .tfRoomDevName .activityRowName{display:none} /* the icon says what it is; the pill its state */
-#app.tfBoard .tfRoomTile[data-style="pills"] .tfRoomDevName .activityRowMeta{color:var(--text);font:500 14px/18px var(--font-tile)}
-/* a narrow card's pills one under another (two by two they'd be too narrow for their state), two at L, as Rows; a wide
-   card's two by two */
-#app.tfBoard .tfRoomTile[data-cols="1"]:is([data-rows="4"],[data-rows="5"])[data-style="pills"] .tfRoomHeads{grid-template-columns:minmax(0,1fr)}
-#app.tfBoard .tfRoomTile[data-cols="1"][data-rows="4"][data-style="pills"] .tfRoomDev:nth-child(n+3){display:none}
-@media (max-width:620px){
-  #app.tfBoard .tfRoomTile[data-cols="1"][data-style="panel"] .tfRoomDevices>:nth-child(n+4){display:none} /* three fit in its one row */
-}
-#app.tfBoard .tfRoomTile[data-style="pills"] .tfRoomLong{display:none}
-#app.tfBoard .tfRoomTile[data-style="pills"] .tfRoomShort{display:inline}
+#app.tfBoard .tfRoomTile[data-style][data-style="pills"] .tfRoomDev{gap:8px;padding-right:10px;border-radius:var(--r-inner);background:var(--tile);box-shadow:inset 0 0 0 .2px var(--line),inset 0 -.4px 0 var(--line)}
+#app.tfBoard .tfRoomTile[data-style][data-style="pills"] .tfRoomDev::before{display:none}
+#app.tfBoard .tfRoomTile[data-style][data-style="pills"] .tfRoomDevName .activityRowName{display:none}
+#app.tfBoard .tfRoomTile[data-style][data-style="pills"] .tfRoomDevName .activityRowMeta{color:var(--text);font:500 14px/18px var(--font-tile)}
+#app.tfBoard .tfRoomTile[data-style][data-style="pills"] .tfRoomLong{display:none}
+#app.tfBoard .tfRoomTile[data-style][data-style="pills"] .tfRoomShort{display:inline}
 /* Panel: the callout in a panel of its own (its corner the card's less the card's 18 in), the icons in one row */
 #app.tfBoard .tfRoomTile:is([data-rows="4"],[data-rows="5"])[data-style="panel"] .tfRoomReading{align-self:stretch;max-width:none;padding:12px 14px;border-radius:10px;background:var(--tile);box-shadow:inset 0 0 0 .2px var(--line),inset 0 -.4px 0 var(--line)}
 #app.tfBoard .tfRoomTile:is([data-rows="4"],[data-rows="5"])[data-style="panel"] .tfRoomDevices{display:flex}

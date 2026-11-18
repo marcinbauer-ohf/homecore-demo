@@ -1237,9 +1237,7 @@ export function mountTestFocus(root, { config, getHass }) {
     return '<div class="tfAction tfRoomTile" data-style="' + areaStyle + '"' + (key ? ' data-k="' + esc(key) + '"' : '') + attrs + ' data-go="' + esc(r.id) + '">' +
       '<div class="tfActionHead">' + roomIcon +
       '<button class="tfName" type="button" data-go="' + esc(r.id) + '" aria-label="Open ' + esc(r.name) + '"><span class="activityRowName">' + esc(r.name) + '</span>' +
-      (big || sub ? '<span class="activityRowMeta"><span class="tfRoomMetaFull">' + (big ? '<span class="tfRoomInline">' + esc(big) + (sub ? ' · ' : '') + '</span>' : '') + esc(sub) + '</span>' +
-        // a small card's head says what its callout is, the callout under it (18 Nov)
-        (label ? '<span class="tfRoomMetaLabel">' + esc(label) + '</span>' : '') + '</span>' : '') + '</button></div>' +
+      (big || sub ? '<span class="activityRowMeta">' + (big ? '<span class="tfRoomInline">' + esc(big) + (sub ? ' · ' : '') + '</span>' : '') + esc(sub) + '</span>' : '') + '</button></div>' +
       // the reading opens its more-info (the thermometer's, say)
       (big ? '<button class="tfRoomReading" type="button" data-more="' + esc(main) + '" aria-label="' + esc(nameOf(main) + ', ' + valueOf(main) + '. More info') + '">' + (label ? '<span class="tfRoomLabel">' + esc(label) + '</span>' : '') + '<span class="tfRoomBig">' + esc(big) + '</span>' + (rest ? '<span class="tfRoomSub">' + esc(rest) + '</span>' : '') + '</button>' : '') +
       (devices.length ? '<div class="tfRoomDevices">' + devices.join('') + '</div><div class="tfRoomHeads">' + heads.join('') + '</div>' : '') + '</div>';
@@ -2228,7 +2226,9 @@ export function mountTestFocus(root, { config, getHass }) {
     const pack = (f, c, w) => {
       const taken = new Set(), at = [];
       f.cards.forEach((it, i) => {
-        const big = mixed && i === 0 && c >= 2 && f.cards.length > 1, sc = big ? 2 : 1, sr = big && !phone ? 2 : 1;
+        // the big one is the most important but not much bigger (Matt, 18 Nov: "far too big… all the cards relatively the
+        // same size"): two wide, as tall as the others, its devices beside its callout
+        const big = mixed && i === 0 && c >= 2 && f.cards.length > 1, sc = big ? 2 : 1, sr = 1;
         it.el.classList.add('tfBoardItem');
         it.el.dataset.cols = sc; it.el.toggleAttribute('data-narrow', false);
         for (let r = 0; ; r++) {
