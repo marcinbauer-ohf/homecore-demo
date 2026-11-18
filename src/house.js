@@ -13,10 +13,10 @@ const MADE_UP = {
   kitchen: { temperature: 21.2, humidity: 48, door: 'Back door', plant: ['Basil', 55, 900, 22.1, 910] },
   balcony: { solar: true, door: 'Balcony door', doorOpen: true, valve: 'Watering', valvePos: ['Garden valve', 40], plant: ['Tomatoes', 61, 18500, 14.2, 1240] },
   bedroom: { cover: ['Roller blind', 'shade', 0], humidifier: true, temperature: 18.9, humidity: 38, window: 'Bedroom window', fan: ['Ceiling fan', 60] },
-  office: { cover: ['Blinds', 'blind', 60, 45], vacuum: true, temperature: 21.8, humidity: 41, plant: ['Pothos', 47, 2600, 21.6, 640] },
+  office: { cover: ['Blinds', 'blind', 60, 45], vacuum: true, temperature: 21.8, humidity: 41, plant: ['Pothos', 47, 2600, 21.6, 640], status: 'Busy' },
   bathroom: { temperature: 22.4, humidity: 62, fan: ['Extractor fan'] },
   // the made-up areas (house-data.js), on the made-up floors and Matt's
-  spare_room: { temperature: 17.6, humidity: 46 }, storage: { temperature: 15.2, humidity: 52 }, hallway: { temperature: 19.8, humidity: 45 },
+  spare_room: { temperature: 17.6, humidity: 46 }, storage: { temperature: 15.2, humidity: 52, lock: 'Storage door' }, hallway: { temperature: 19.8, humidity: 45 },
   dining_room: { temperature: 20.9, humidity: 47 }, workshop: { temperature: 16.4, humidity: 55, garage: 'Garage door' }, laundry: { temperature: 18.1, humidity: 68, waterHeater: true, valvePos: ['Water valve', null] },
 };
 // What a plant wants (as Home Assistant's plant integration checks it)
@@ -67,6 +67,9 @@ export function createHouse({ onChange }) {
     if (m.waterHeater) add('water_heater.' + PREFIX + a, a, 'eco', { friendly_name: 'Water heater', current_temperature: 55, temperature: 60, min_temp: 40, max_temp: 75, target_temp_step: 1, operation_mode: 'eco', operation_list: ['off', 'eco', 'electric', 'gas'], away_mode: 'off' });
     // a valve with a position (set_position, 4), or [name, null] only open and closed
     if (m.valvePos) { const [name, pos] = m.valvePos; add('valve.' + PREFIX + a + '_' + slug(name), a, pos == null ? 'open' : pos ? 'open' : 'closed', { friendly_name: name, device_class: 'water', supported_features: 1 | 2 | (pos == null ? 0 : 4 | 8), ...(pos == null ? {} : { current_position: pos }) }); }
+    // a room's own lock (the storage door), and what's going on in a room (the office: someone's busy in there)
+    if (m.lock) add('lock.' + PREFIX + a + '_door', a, 'locked', { friendly_name: m.lock, changed_by: 'Wembely' });
+    if (m.status) add('sensor.' + PREFIX + a + '_status', a, m.status, { friendly_name: 'Status', icon: 'mdi:account-clock', options: ['Free', 'Busy', 'Away'], device_class: 'enum' });
     if (m.garage) add('cover.' + PREFIX + a + '_' + slug(m.garage), a, 'closed', { friendly_name: m.garage, device_class: 'garage', supported_features: 1 | 2 });
     if (m.cover) {
       const [name, cls, position, tilt] = m.cover;
@@ -215,6 +218,11 @@ export function createHouse({ onChange }) {
       const open = service === 'open_valve' || (service === 'toggle' && s.state !== 'open');
       if (['open_valve', 'close_valve', 'toggle'].includes(service)) set(open ? 'open' : 'closed', a.current_position != null ? { current_position: open ? 100 : 0 } : {});
       if (service === 'set_valve_position') set(data.position > 0 ? 'open' : 'closed', { current_position: data.position });
+    }
+    if (domain === 'lock') {
+      if (service === 'lock') set('locked', { changed_by: 'Wembely' });
+      if (service === 'unlock') set('unlocked', { changed_by: 'Wembely' });
+      if (service === 'open') set('open', { changed_by: 'Wembely' });
     }
     if (domain === 'alarm_control_panel') {
       if (service === 'alarm_disarm') { arming = null; set('disarmed', { changed_by: 'Wembely' }); }
