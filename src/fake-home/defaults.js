@@ -27,9 +27,6 @@ export const USER_DATA = {
     // suggestions after them
     favourites: ['lock.openable_lock', 'cover.made_up_living_room_curtains', 'valve.made_up_balcony_watering', 'climate.made_up_living_room'],
     favSeeded: true,
-    // each area card's big reading where it isn't the room's temperature (Matt, 18 Nov): the bathroom's humidity, the
-    // kitchen's leak sensor, the storage door's lock, whether the office is busy
-    areaMains: { bathroom: 'sensor.made_up_bathroom_humidity', kitchen: 'binary_sensor.ikea_of_sweden_badring_water_leakage_sensor', storage: 'lock.made_up_storage_door', office: 'sensor.made_up_office_status' },
     suggest: false,
     shownSums: ['covers', 'people'],
     // Home's first look (Matt, 17 Nov, his screenshots: "by default for the overview page, i want these settings"): the

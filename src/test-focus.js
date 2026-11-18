@@ -1120,8 +1120,10 @@ export function mountTestFocus(root, { config, getHass }) {
     return '<button class="tfIcon tfAreaIcon' + (on ? ' on' : '') + '" type="button"' + lit + ' data-acts="' + acts(k.acts) + '" aria-label="' + esc(k.aria) + '" aria-pressed="' + on + '">' + glyph + '</button>';
   }
   // a room's main: its temperature, else its first reading, else its first device
-  // the one picked for it, if any (Matt, 18 Nov: the bathroom's humidity, the kitchen's leaks, the storage door, the office)
-  const mainOf = (r) => (states[prefs.areaMains?.[r.id]] ? prefs.areaMains[r.id] : null) || r.readings.find((id) => attr(id).device_class === 'temperature') || [...r.readings, ...r.solar, ...r.openings, ...r.actions, ...r.plugs].find((id) => states[id]) || null;
+  // a room's main (Matt, 18 Nov): the one picked for it, if any; else its temperature; else the next best thing it has:
+  // its humidity, a leak sensor, its lock, what's going on in it (a status), its solar, a door or window, a device
+  const mainOf = (r) => (states[prefs.areaMains?.[r.id]] ? prefs.areaMains[r.id] : null) || r.readings.find((id) => attr(id).device_class === 'temperature') ||
+    [...r.readings, ...(r.locks || []), ...(r.statuses || []), ...r.solar, ...r.openings, ...r.actions, ...r.plugs].find((id) => states[id]) || null;
   // a name without its room's ("Living room humidity" in the living room is "Humidity")
   const inRoom = (r, id) => { const n = nameOf(id); return n.toLowerCase().startsWith(r.name.toLowerCase() + ' ') ? cap(n.slice(r.name.length + 1)) : n; };
   // the main as a headline: a number and its unit, or a word

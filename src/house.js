@@ -10,13 +10,14 @@ const SKIP_AREAS = new Set(['roaming', 'test_area']);
 // kind the covers design draws (curtains, a roller blind, venetian blinds)
 const MADE_UP = {
   living_room: { climate: true, cover: ['Curtains', 'curtain', 62], temperature: 20.5, humidity: 44, motion: 'Living room motion', plant: ['Monstera', 32, 4200, 21.4, 580] },
-  kitchen: { temperature: 21.2, humidity: 48, door: 'Back door', plant: ['Basil', 55, 900, 22.1, 910] },
+  // no temperature here (Matt, 18 Nov): its card leads with its leak sensor
+  kitchen: { door: 'Back door', plant: ['Basil', 55, 900, 22.1, 910] },
   balcony: { solar: true, door: 'Balcony door', doorOpen: true, valve: 'Watering', valvePos: ['Garden valve', 40], plant: ['Tomatoes', 61, 18500, 14.2, 1240] },
   bedroom: { cover: ['Roller blind', 'shade', 0], humidifier: true, temperature: 18.9, humidity: 38, window: 'Bedroom window', fan: ['Ceiling fan', 60] },
-  office: { cover: ['Blinds', 'blind', 60, 45], vacuum: true, temperature: 21.8, humidity: 41, plant: ['Pothos', 47, 2600, 21.6, 640], status: 'Busy' },
-  bathroom: { temperature: 22.4, humidity: 62, fan: ['Extractor fan'] },
+  office: { cover: ['Blinds', 'blind', 60, 45], vacuum: true, plant: ['Pothos', 47, 2600, 21.6, 640], status: 'Busy' }, // whether it's busy leads
+  bathroom: { humidity: 62, fan: ['Extractor fan'] }, // its humidity leads (no temperature)
   // the made-up areas (house-data.js), on the made-up floors and Matt's
-  spare_room: { temperature: 17.6, humidity: 46 }, storage: { temperature: 15.2, humidity: 52, lock: 'Storage door' }, hallway: { temperature: 19.8, humidity: 45 },
+  spare_room: { temperature: 17.6, humidity: 46 }, storage: { lock: 'Storage door' } /* its lock leads */, hallway: { temperature: 19.8, humidity: 45 },
   dining_room: { temperature: 20.9, humidity: 47 }, workshop: { temperature: 16.4, humidity: 55, garage: 'Garage door' }, laundry: { temperature: 18.1, humidity: 68, waterHeater: true, valvePos: ['Water valve', null] },
 };
 // What a plant wants (as Home Assistant's plant integration checks it)
@@ -263,6 +264,9 @@ export function createHouse({ onChange }) {
         readings: [...temp.slice(0, 1), ...hum.slice(0, 1), ...leaks],
         power: power.length ? power.reduce((sum, id) => sum + Number(states[id].state) * (states[id].attributes.unit_of_measurement === 'kW' ? 1000 : 1), 0) : null,
         plugs: of('switch'),
+        // a room's own locks and what's going on in it (a status), for its card when it has no temperature
+        locks: [...of('lock'), ...mine((id) => id.startsWith('lock.'))],
+        statuses: [...sensors('enum'), ...mine((id) => id.startsWith('sensor.') && id.endsWith('_status'))],
         lights: of('light'),
         actions: [...of('light'), ...pick(of('climate'), (id) => id.startsWith('climate.')), ...pick(of('cover'), (id) => id.startsWith('cover.')), ...pick(of('humidifier'), (id) => id.startsWith('humidifier.')), ...pick(of('valve'), (id) => id.startsWith('valve.')), ...of('media_player'), ...of('vacuum'), ...(realVacuums.length ? [] : mine((id) => id.startsWith('vacuum.'))),
           ...of('fan'), ...mine((id) => id.startsWith('fan.')), ...of('water_heater'), ...mine((id) => id.startsWith('water_heater.'))],
