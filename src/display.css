@@ -680,11 +680,9 @@ button.tfAreaIcon{cursor:pointer}
 .tfRoomDevName{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
 .tfRoomDev .tfIcon{border:0;padding:0;background:var(--hc-icon);color:var(--hc-icon-ink);cursor:pointer}
 .tfRoomDev .tfIcon.on[data-light]{background:var(--light-soft);color:var(--light-ink)}
-/* an icon on its own opens what it stands for and is drawn as the summaries' are, no chip, the glyph in its colour while
-   it's on (Matt, 18 Nov); one beside its name keeps its chip */
+/* the room's icon opens the room's page and is drawn as the summaries' are, no chip (Matt, 18 Nov); a device's icon keeps
+   its chip */
 #app .tfRoomTile .tfIcon.tfIconOpen{border:0;padding:0;background-color:transparent!important;color:var(--hc-icon-ink);cursor:pointer}
-#app .tfRoomTile .tfIcon.tfIconOpen.on[data-light]{color:var(--light-hue,var(--light-ink))}
-#app.light .tfRoomTile .tfIcon.tfIconOpen.on[data-light]{color:var(--light-ink)}
 /* a small card: the callout big with what it is under it, small (Matt, 18 Nov: "a small subtitle under"), and not in the
    head as well */
 #app.tfBoard .tfRoomTile[data-cols="1"][data-rows="2"]{gap:8px}

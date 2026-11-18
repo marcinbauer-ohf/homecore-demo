@@ -616,7 +616,7 @@ export function mountTestFocus(root, { config, getHass }) {
   const climateVars = () => [0, 1, 2].map((i) => '--g' + i + '-d:' + CLIMATE_STOPS.d[i] + ';--g' + i + '-l:' + CLIMATE_STOPS.l[i]).join(';');
   const CLIMATE_DEFS = '<svg class="tfGradDefs" aria-hidden="true" focusable="false"><defs><linearGradient id="hcClimateGrad" x1="0" y1="0" x2="0" y2="1">' +
     [0.15, 0.5, 0.85].map((o, i) => '<stop offset="' + o + '" style="stop-color:var(--g' + i + ')"/>').join('') + '</linearGradient></defs></svg>';
-  const colourVars = (rgb) => { const soft = rgb.map((v) => Math.round(v + (255 - v) * SOFTEN)); return '--light-soft:rgb(' + soft.join(',') + ');--light-ink:' + richInk(rgb, soft) + ';--light-hue:rgb(' + rgb.join(',') + ')'; };
+  const colourVars = (rgb) => { const soft = rgb.map((v) => Math.round(v + (255 - v) * SOFTEN)); return '--light-soft:rgb(' + soft.join(',') + ');--light-ink:' + richInk(rgb, soft) ; };
   const lightVars = (id) => colourVars(lightRgb(id));
   // the marker and colours on a device's tile while it's on (data-light: lights first, now every kind)
   const lightAttrs = (id) => { const c = kindRgb(id); return c ? ' data-light style="' + colourVars(c) + '"' : ''; };
@@ -1207,9 +1207,9 @@ export function mountTestFocus(root, { config, getHass }) {
     const opens = (k) => { const ids = groupIds(r, k.key); return ids.length === 1 ? ids[0] : 'group:' + r.id + ':' + k.key; };
     const controls = keys.filter((k) => k.kind === 'control').slice(0, 4), lit = (k) => (k.on && k.light ? ' data-light style="' + k.light + '"' : '');
     /* the big rule (Matt, 18 Nov): an icon on its own opens what it stands for (the room's lights panel, the thermostat),
-       drawn bare as the summaries' are; an icon with its name beside it, a tile, does as a tile's does and turns it on
+       drawn as before; an icon with its name beside it, a tile, does as a tile's does and turns it on
        and off */
-    const opener = (k) => '<button class="tfIcon tfIconOpen' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) + ' data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '">' + k.icon + '</button>';
+    const opener = (k) => '<button class="tfIcon' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) + ' data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '">' + k.icon + '</button>';
     const toggle = (k) => '<button class="tfIcon' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) + ' data-acts="' + acts(k.acts) + '" aria-label="' + esc(k.aria) + '" aria-pressed="' + k.on + '">' + k.icon + '</button>';
     const devices = controls.map(opener);
     // wide, the same devices as heads (icon, name, state), as the open room shows them (Matt, 6 Nov; Figma 954:6297): the
@@ -2212,7 +2212,8 @@ export function mountTestFocus(root, { config, getHass }) {
     const pack = (f, c, w) => {
       const taken = new Set(), at = [];
       f.cards.forEach((it, i) => {
-        const big = mixed && i === 0 && c >= 2 && f.cards.length > 1, sc = big ? 2 : 1, sr = big && !phone ? 2 : 1;
+        // the first is the biggest but only two wide, as tall as the others (Matt, 18 Nov: "why is the living room SO big?")
+        const big = mixed && i === 0 && c >= 2 && f.cards.length > 1, sc = big ? 2 : 1, sr = 1;
         it.el.classList.add('tfBoardItem');
         it.el.dataset.cols = sc; it.el.toggleAttribute('data-narrow', false);
         for (let r = 0; ; r++) {
