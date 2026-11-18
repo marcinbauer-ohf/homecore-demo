@@ -1112,7 +1112,7 @@ export function mountTestFocus(root, { config, getHass }) {
     if (r.plugs.length) keys.push({ key: 'plugs', kind: 'control', tone: 'blue', light: plugsOn.length ? colourVars([255, 193, 7]) : '', icon: areaGlyph('', 'mdi:power-plug'), label: 'Plugs', value: plugsOn.length ? plugsOn.length + ' of ' + r.plugs.length + ' on' : 'All off', short: plugsOn.length ? plugsOn.length + ' on' : 'Off', on: plugsOn.length > 0,
       acts: r.plugs.map((id) => ['switch', plugsOn.length ? 'turn_off' : 'turn_on', id]), aria: (plugsOn.length ? 'Turn off' : 'Turn on') + ' the plugs in ' + r.name });
     // a leak is an alert, in red; an open door or window is only worth a note, never red (Matt, 27 Oct: the balcony door)
-    r.alerts.forEach((id) => keys.push(attr(id).device_class === 'moisture' ? { key: 'alert:' + id, kind: 'alert', icon: areaGlyph(id), label: 'Water leak' }
+    r.alerts.forEach((id) => keys.push(attr(id).device_class === 'moisture' ? { key: 'alert:' + id, kind: 'alert', icon: areaGlyph(id), label: 'Leak' }
       : { key: 'note:' + id, kind: 'note', icon: areaGlyph(id), label: nameOf(id) + ' ' + valueOf(id).toLowerCase() }));
     return keys;
   }

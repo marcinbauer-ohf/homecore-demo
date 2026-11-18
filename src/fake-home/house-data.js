@@ -35,7 +35,7 @@ const ENTITIES = {
     "switch.fridge": { state: "on", attributes: { friendly_name: "Fridge" } },
     "switch.dish_washer": { state: "unavailable", attributes: { friendly_name: "Dish washer" } },
     "sensor.fridge_power": { state: "93.0", attributes: { friendly_name: "Fridge Power", device_class: "power", unit_of_measurement: "W", state_class: "measurement" } },
-    "binary_sensor.ikea_of_sweden_badring_water_leakage_sensor": { state: "off", attributes: { friendly_name: "Water leak", device_class: "moisture" } },
+    "binary_sensor.ikea_of_sweden_badring_water_leakage_sensor": { state: "off", attributes: { friendly_name: "Leak", device_class: "moisture" } },
   },
   bedroom: {
     "light.big_sphere": light("Glass sphere", "off", ["color_temp", "xy"], { min_color_temp_kelvin: 1000, max_color_temp_kelvin: 20000 }),
