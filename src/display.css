@@ -671,11 +671,14 @@ button.tfAreaIcon{cursor:pointer}
 /* a room's tile wide (2 columns) or really wide (3+; Matt, 6 Nov; Figma 954:6297): its devices as heads (icon, name,
    state) in place of buttons, wide two by two, really wide in one row. XS the buttons on the right of the head; wide S
    (its first two) and M, and really wide S, have the reading in the head */
-.tfRoomHeads{display:none;gap:12px 16px}
-.tfRoomDev{position:relative;isolation:isolate;display:flex;align-items:center;gap:12px;min-width:0}
-/* a device's row lights on hover, as the open area's tiles did: reaching 10 past its sides and halfway into the gaps,
-   so the row's layout doesn't move */
-.tfRoomDev::before{content:"";position:absolute;z-index:-1;inset:-6px -10px;border-radius:var(--r-tile);pointer-events:none;transition:background .15s ease,box-shadow .15s ease}
+/* each device a tile, as Favourites' are (Matt, 18 Nov: "the tile height is still wrong"): 60 tall, 10 round its icon,
+   clear until it's hovered; the tiles touch, 8 in from the card's sides and foot so their icons line up with the
+   room's at 18, their corner the card's 28 less those 8 (they nest) */
+.tfRoomHeads{display:none;gap:0;margin:auto -10px -10px}
+.tfRoomDev{position:relative;isolation:isolate;display:flex;align-items:center;gap:12px;min-width:0;height:60px;padding:10px;box-sizing:border-box;border-radius:20px}
+.tfRoomDev::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;pointer-events:none;transition:background .15s ease,box-shadow .15s ease}
+/* a wide Small card: its head, 10, then its one row of tiles */
+#app.tfBoard .tfRoomTile:not([data-cols="1"])[data-rows="2"]{gap:10px}
 @media (hover:hover){.tfRoomDev:hover::before{background:var(--tile);box-shadow:inset 0 0 0 .2px var(--line),inset 0 -.4px 0 var(--line)}}
 .tfRoomDevName{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
 .tfRoomDev .tfIcon{border:0;padding:0;background:var(--hc-icon);color:var(--hc-icon-ink);cursor:pointer}
