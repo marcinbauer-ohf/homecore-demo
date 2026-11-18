@@ -616,7 +616,7 @@ export function mountTestFocus(root, { config, getHass }) {
   const climateVars = () => [0, 1, 2].map((i) => '--g' + i + '-d:' + CLIMATE_STOPS.d[i] + ';--g' + i + '-l:' + CLIMATE_STOPS.l[i]).join(';');
   const CLIMATE_DEFS = '<svg class="tfGradDefs" aria-hidden="true" focusable="false"><defs><linearGradient id="hcClimateGrad" x1="0" y1="0" x2="0" y2="1">' +
     [0.15, 0.5, 0.85].map((o, i) => '<stop offset="' + o + '" style="stop-color:var(--g' + i + ')"/>').join('') + '</linearGradient></defs></svg>';
-  const colourVars = (rgb) => { const soft = rgb.map((v) => Math.round(v + (255 - v) * SOFTEN)); return '--light-soft:rgb(' + soft.join(',') + ');--light-ink:' + richInk(rgb, soft); };
+  const colourVars = (rgb) => { const soft = rgb.map((v) => Math.round(v + (255 - v) * SOFTEN)); return '--light-soft:rgb(' + soft.join(',') + ');--light-ink:' + richInk(rgb, soft) + ';--light-hue:rgb(' + rgb.join(',') + ')'; };
   const lightVars = (id) => colourVars(lightRgb(id));
   // the marker and colours on a device's tile while it's on (data-light: lights first, now every kind)
   const lightAttrs = (id) => { const c = kindRgb(id); return c ? ' data-light style="' + colourVars(c) + '"' : ''; };
@@ -1102,8 +1102,7 @@ export function mountTestFocus(root, { config, getHass }) {
       keys.push({ key: 'media', kind: 'control', tone: 'blue', light: kindRgb(id) ? colourVars(kindRgb(id)) : '', icon: areaGlyph(id), label: nameOf(id), value: valueOf(id), short: isOn ? 'Playing' : st.state === 'paused' ? 'Paused' : cap(st.state), on: isOn,
         acts: [['media_player', st.state === 'playing' || st.state === 'paused' ? 'media_play_pause' : 'toggle', id]], aria: (isOn ? 'Pause ' : 'Play ') + nameOf(id) });
     }
-    // a room's lock is one of its devices: its icon locks and unlocks it (Matt, 18 Nov: "an actual lock device inside the
-    // storage area")
+    // a room's lock is one of its devices (Matt, 18 Nov: "an actual lock device inside the storage area")
     const lock = (r.locks || []).find((id) => states[id]);
     if (lock) {
       const locked = states[lock].state === 'locked';
@@ -1166,21 +1165,6 @@ export function mountTestFocus(root, { config, getHass }) {
     if (id.startsWith('climate.')) return [inRoom(r, id), off ? 'Off' : cap(a.hvac_action || states[id].state) + (a.temperature != null ? ' · ' + deg(a.temperature) : ''), h && h.value].filter(Boolean).join(' · ');
     return [!(t && t.id === id) && inRoom(r, id), t && t.id !== id && t.value, h && h.id !== id && h.value + (t ? '' : ' humidity')].filter(Boolean).join(' · ');
   };
-  // the big callout says what it is above it (Matt, 18 Nov: "Water leak" above "Dry", "Humidity" above "62%"), and the
-  // room's other readings under it
-  const mainLabel = (r, id) => (attr(id).device_class === 'temperature' ? 'Temperature' : attr(id).device_class === 'moisture' ? 'Water leak' : inRoom(r, id));
-  const mainRest = (r, id, keys) => {
-    const t = keys.find((k) => k.key === 'temp'), h = keys.find((k) => k.key === 'hum'), a = attr(id);
-    if (id.startsWith('climate.')) return [states[id].state === 'off' ? 'Off' : cap(a.hvac_action || states[id].state) + (a.temperature != null ? ' · ' + deg(a.temperature) : ''), h && h.value].filter(Boolean).join(' · ');
-    return [t && t.id !== id && t.value, h && h.id !== id && h.value + (t ? '' : ' humidity')].filter(Boolean).join(' · ');
-  };
-  /* four ways to lay out an area card to choose between (Matt, 18 Nov: "give me four different options"), every card the
-     same way; in all four the callout has its label above it, a device's icon turns it on and off, and its name (where it
-     shows) opens its control. Icons: the icons two by two. Rows: the devices listed, icon, name and state. Panel: the
-     callout in its own panel, the icons in one row under it. Pills: the devices two by two, each icon and state in a pill */
-  const AREA_STYLES = { icons: 'Icons', rows: 'Rows', panel: 'Panel', pills: 'Pills' };
-  const STYLE_KEY = 'homecore-demo-area-style';
-  let areaStyle = (() => { try { const s = localStorage.getItem(STYLE_KEY); return AREA_STYLES[s] ? s : 'icons'; } catch (_e) { return 'icons'; } })();
   /* the open area is the area card itself (Tile · Room at Wide, two columns; Matt, 17 Nov: "the only difference is they
      come pre-grouped with defined behaviour"), as tall as the Areas card */
   function areaPanel(r) {
@@ -1213,8 +1197,8 @@ export function mountTestFocus(root, { config, getHass }) {
      card, keyed room:<area>. The head is the room's icon and name; XS its reading in the head, S the reading big, M its
      devices too (up to four), L and XL the reading bigger with its second under it. It never opens out: the tile opens
      the room's page. Its interactions are the Areas card's open area's (Matt, 17 Nov: "bring them all"): the room's
-     icon only shows the room (18 Nov), a device's icon turns it on and off, its name opens its control (one device its
-     own, a room's lights or covers as a group), the reading opens its more-info, and the edge lights up */
+     icon opens the room's page (18 Nov), a device's icon on its own and a device's name open its control (one device its
+     own, a room's lights or covers as a group), a device's icon beside its name turns it on and off, the reading opens its more-info, and the edge lights up */
   const isRoomKey = (key) => key.startsWith('room:');
   const roomOf = (key) => areaRooms.find((r) => 'room:' + r.id === key);
   function roomTile(r, key, attrs = '') {
@@ -1222,24 +1206,26 @@ export function mountTestFocus(root, { config, getHass }) {
     const big = h ? h.text + (h.unit ? ' ' + h.unit : '') : '';
     const opens = (k) => { const ids = groupIds(r, k.key); return ids.length === 1 ? ids[0] : 'group:' + r.id + ':' + k.key; };
     const controls = keys.filter((k) => k.kind === 'control').slice(0, 4), lit = (k) => (k.on && k.light ? ' data-light style="' + k.light + '"' : '');
-    // the icon is the button: it turns the device on and off (Matt, 18 Nov: "turn off and on key devices within that area")
+    /* the big rule (Matt, 18 Nov): an icon on its own opens what it stands for (the room's lights panel, the thermostat),
+       drawn bare as the summaries' are; an icon with its name beside it, a tile, does as a tile's does and turns it on
+       and off */
+    const opener = (k) => '<button class="tfIcon tfIconOpen' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) + ' data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '">' + k.icon + '</button>';
     const toggle = (k) => '<button class="tfIcon' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) + ' data-acts="' + acts(k.acts) + '" aria-label="' + esc(k.aria) + '" aria-pressed="' + k.on + '">' + k.icon + '</button>';
-    const devices = controls.map(toggle);
+    const devices = controls.map(opener);
     // wide, the same devices as heads (icon, name, state), as the open room shows them (Matt, 6 Nov; Figma 954:6297): the
     // name opens its control
     const heads = controls.map((k) => '<div class="tfRoomDev' + (k.on ? ' on' : '') + '">' + toggle(k) +
-      '<button class="tfName tfRoomDevName" type="button" data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '"><span class="activityRowName">' + esc(k.label) + '</span><span class="activityRowMeta"><span class="tfRoomLong">' + esc(k.value) + '</span><span class="tfRoomShort">' + esc(k.short || k.value) + '</span></span></button></div>');
-    // the room's icon only shows the room, with no chip behind it (Matt, 18 Nov: it turned off everything in the room,
-    // which "just shouldn't happen")
+      '<button class="tfName tfRoomDevName" type="button" data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '"><span class="activityRowName">' + esc(k.label) + '</span><span class="activityRowMeta">' + esc(k.value) + '</span></button></div>');
+    // the room's icon opens the room's page (Matt, 18 Nov), bare as the summaries' are; it used to turn off everything in
+    // the room, which "just shouldn't happen"
     const glyph = '<span class="tfAreaGlyph"' + iconSlot('area:' + r.id, r.icon || 'mdi:texture-box', r.name) + '></span>';
-    const roomIcon = '<span class="tfIcon tfRoomIcon" aria-hidden="true">' + glyph + '</span>';
-    const label = main ? mainLabel(r, main) : '', rest = main ? mainRest(r, main, keys) : '';
-    return '<div class="tfAction tfRoomTile" data-style="' + areaStyle + '"' + (key ? ' data-k="' + esc(key) + '"' : '') + attrs + ' data-go="' + esc(r.id) + '">' +
+    const roomIcon = '<button class="tfIcon tfIconOpen tfRoomIcon" type="button" data-go="' + esc(r.id) + '" aria-label="Open ' + esc(r.name) + '">' + glyph + '</button>';
+    return '<div class="tfAction tfRoomTile"' + (key ? ' data-k="' + esc(key) + '"' : '') + attrs + ' data-go="' + esc(r.id) + '">' +
       '<div class="tfActionHead">' + roomIcon +
       '<button class="tfName" type="button" data-go="' + esc(r.id) + '" aria-label="Open ' + esc(r.name) + '"><span class="activityRowName">' + esc(r.name) + '</span>' +
       (big || sub ? '<span class="activityRowMeta">' + (big ? '<span class="tfRoomInline">' + esc(big) + (sub ? ' · ' : '') + '</span>' : '') + esc(sub) + '</span>' : '') + '</button></div>' +
       // the reading opens its more-info (the thermometer's, say)
-      (big ? '<button class="tfRoomReading" type="button" data-more="' + esc(main) + '" aria-label="' + esc(nameOf(main) + ', ' + valueOf(main) + '. More info') + '">' + (label ? '<span class="tfRoomLabel">' + esc(label) + '</span>' : '') + '<span class="tfRoomBig">' + esc(big) + '</span>' + (rest ? '<span class="tfRoomSub">' + esc(rest) + '</span>' : '') + '</button>' : '') +
+      (big ? '<button class="tfRoomReading" type="button" data-more="' + esc(main) + '" aria-label="' + esc(nameOf(main) + ', ' + valueOf(main) + '. More info') + '"><span class="tfRoomBig">' + esc(big) + '</span>' + (sub ? '<span class="tfRoomSub">' + esc(sub) + '</span>' : '') + '</button>' : '') +
       (devices.length ? '<div class="tfRoomDevices">' + devices.join('') + '</div><div class="tfRoomHeads">' + heads.join('') + '</div>' : '') + '</div>';
   }
 
@@ -2226,9 +2212,7 @@ export function mountTestFocus(root, { config, getHass }) {
     const pack = (f, c, w) => {
       const taken = new Set(), at = [];
       f.cards.forEach((it, i) => {
-        // the big one is the most important but not much bigger (Matt, 18 Nov: "far too big… all the cards relatively the
-        // same size"): two wide, as tall as the others, its devices beside its callout
-        const big = mixed && i === 0 && c >= 2 && f.cards.length > 1, sc = big ? 2 : 1, sr = 1;
+        const big = mixed && i === 0 && c >= 2 && f.cards.length > 1, sc = big ? 2 : 1, sr = big && !phone ? 2 : 1;
         it.el.classList.add('tfBoardItem');
         it.el.dataset.cols = sc; it.el.toggleAttribute('data-narrow', false);
         for (let r = 0; ; r++) {
@@ -4659,25 +4643,6 @@ export function mountTestFocus(root, { config, getHass }) {
   }
 
   applyDensity();
-  // the four area card layouts to try (Matt, 18 Nov), switched from a strip at the foot of the page while he chooses;
-  // to take it out, delete this and AREA_STYLES' data-style (and their CSS, .hcAreaStyles and [data-style])
-  if (testFocus && app && !app.querySelector('.hcAreaStyles')) {
-    const pick = document.createElement('div');
-    pick.className = 'hcAreaStyles';
-    pick.setAttribute('role', 'group');
-    pick.setAttribute('aria-label', 'Area card layout');
-    const drawPick = () => { pick.innerHTML = '<span>Area cards</span>' + Object.entries(AREA_STYLES).map(([k, t]) => '<button type="button" data-area-style="' + k + '" aria-pressed="' + (k === areaStyle) + '">' + t + '</button>').join(''); };
-    drawPick();
-    pick.addEventListener('click', (ev) => {
-      const b = ev.target.closest('[data-area-style]');
-      if (!b || b.dataset.areaStyle === areaStyle) return;
-      areaStyle = b.dataset.areaStyle;
-      try { localStorage.setItem(STYLE_KEY, areaStyle); } catch (_e) { /* this visit only */ }
-      drawPick();
-      if (grid) render();
-    });
-    app.appendChild(pick);
-  }
   return {
     // HomeCore demo: the site's rail opens Home and the Weather page, and its Devices page lists the same states
     openArea, closeArea,
