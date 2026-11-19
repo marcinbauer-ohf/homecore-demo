@@ -67,7 +67,7 @@ export function renderAccount(page, { esc, icon, go, root, glyph, paint, head })
         // the photo from the top left, level with the first row (Matt, 9 Nov)
         '<div class="hcPhoto"><img src="' + photo + '" alt="Your photo"><div class="hcPhotoActions"><button class="hcBtn" type="button" data-oops>Change photo</button><button class="pill" type="button" data-oops>Remove</button></div></div>' +
         '<section class="card hcFields">' + field('name', 'Name', 'Your name') + field('nickname', 'Nickname', 'Add a nickname') +
-          field('pronouns', 'Pronouns', 'Ex. they/them/theirs', 'text', 'Let people know which pronouns you use.') + '</section>' +
+          field('pronouns', 'Pronouns', 'Ex. they/them/theirs') + '</section>' +
         // each section's title inside its card (Matt, 9 Nov)
         '<section class="card hcFields"><div class="hcCardTitle">Contact information</div>' +
           field('mail', 'Mail address', 'name@example.com', 'email') + field('phone', 'Phone number', '+31 6 1234 5678', 'tel') + '</section>' +
