@@ -2864,15 +2864,17 @@ export function mountTestFocus(root, { config, getHass }) {
   function closeInfo() { if (!infoFor) return; infoFor.setAttribute('aria-expanded', 'false'); infoFor = null; infoPop.hidden = true; }
   function openInfo(btn) {
     const was = infoFor; closeInfo(); if (was === btn) return;
-    const [title, html] = HOME_INFO[btn.dataset.info];
+    // Edit Home's settings, or any (i) that carries its own words (data-info-title, -text and -more: the account page's fields)
+    const [title, html, more] = HOME_INFO[btn.dataset.info] || [btn.dataset.infoTitle, '<p>' + esc(btn.dataset.infoText) + '</p>', btn.dataset.infoMore];
     infoPop.setAttribute('aria-label', title);
-    infoPop.innerHTML = '<div class="hcInfoTitle">' + esc(title) + '</div><div class="hcInfoText">' + html + '</div><a class="hcInfoMore" href="' + LEARN_MORE + '" target="_blank" rel="noopener">Learn more</a>';
+    infoPop.innerHTML = '<div class="hcInfoTitle">' + esc(title) + '</div><div class="hcInfoText">' + html + '</div><a class="hcInfoMore" href="' + esc(more || LEARN_MORE) + '" target="_blank" rel="noopener">Learn more</a>';
     infoPop.hidden = false; infoFor = btn; btn.setAttribute('aria-expanded', 'true');
     const r = btn.getBoundingClientRect(), pw = infoPop.offsetWidth, ph = infoPop.offsetHeight;
     infoPop.style.left = Math.max(8, Math.min(innerWidth - pw - 8, r.left + r.width / 2 - pw / 2)) + 'px';
     infoPop.style.top = (r.bottom + 8 + ph > innerHeight - 8 ? Math.max(8, r.top - 8 - ph) : r.bottom + 8) + 'px';
   }
   root.addEventListener('pointerdown', (ev) => { if (infoFor && !ev.composedPath().some((n) => n === infoPop || n === infoFor)) closeInfo(); }, true);
+  root.addEventListener('click', (ev) => { const b = ev.target.closest?.('button[data-info-text]'); if (b) openInfo(b); });
   root.addEventListener('keydown', (ev) => {
     if (ev.key !== 'Escape') return;
     if (infoFor) { ev.stopPropagation(); const b = infoFor; closeInfo(); b.focus(); return; }

@@ -11,6 +11,22 @@ const GROUPS = [
 ];
 const KEY = 'homecore-demo-profile';
 const FIELDS = { name: 'Wembely', nickname: '', pronouns: '', mail: '', phone: '', about: '' };
+// what each field's (i) says
+const ABOUT = {
+  name: 'How you show up to everyone in your home: in the activity log, on Home\'s welcome message and wherever Home Assistant names you.',
+  nickname: 'A shorter or friendlier name, if you\'d rather be called something else.',
+  pronouns: 'Shown with your name, so the people in your home know how to refer to you.',
+  mail: 'Where Home Assistant can reach you, for notifications and messages about your account.',
+  phone: 'For text notifications. Start with your country code, like +31.',
+  about: 'A few words about yourself, for the people you share your home with.',
+  since: 'The day your account was made on this Home Assistant.',
+};
+const LEARN = 'https://www.home-assistant.io/docs/authentication/';
+// what a field must look like, and what to say when it doesn't
+const CHECKS = {
+  mail: [(v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Enter a mail address, like name@example.com'],
+  phone: [(v) => /^\+?[\d\s().-]+$/.test(v) && (v.match(/\d/g) || []).length >= 7 && (v.match(/\d/g) || []).length <= 15, 'Enter a phone number, like +31 6 1234 5678'],
+};
 const local = {
   get() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (_e) { return {}; } },
   set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (_e) { /* not remembered */ } },
@@ -23,11 +39,15 @@ export function renderAccount(page, { esc, icon, go, root, glyph, paint, head })
   const row = ([k, name, ic, colour]) => '<button class="hcRow' + (k === 'profile' ? ' active' : '') + '" type="button" data-acc="' + k + '">' +
     glyph(ic, colour) +
     '<span class="hcRowText"><span class="hcRowName">' + name + '</span></span></button>';
-  const field = (k, label, ph, type = 'text', note = '') => '<label class="hcField"><span class="hcFieldName">' + label + '</span>' +
-    (type === 'area' ? '<textarea class="hcInput" rows="4" data-f="' + k + '" placeholder="' + esc(ph) + '">' + esc(me[k]) + '</textarea>'
-      : '<input class="hcInput" type="' + type + '" data-f="' + k + '" placeholder="' + esc(ph) + '" value="' + esc(me[k]) + '">') +
-    (note ? '<span class="hcFieldNote">' + note + '</span>' : '') + '</label>';
-
+  /* a field: its title with an (i) beside it, the box, and a note under it (Figma "Field · Titled", 1240:5611). The (i)
+     opens the same popover as Edit Home's settings; a mail address or phone number that isn't one shows the danger
+     ring, and its note says what to fix (checked when you leave the field, cleared as soon as it's right) */
+  const field = (k, label, ph, type = 'text', note = '') => '<div class="hcField">' + title(k, label, 'hcf-' + k) +
+    (type === 'area' ? '<textarea class="hcInput" id="hcf-' + k + '" rows="4" data-f="' + k + '"' + (note ? ' aria-describedby="hcf-' + k + '-note"' : '') + ' placeholder="' + esc(ph) + '">' + esc(me[k]) + '</textarea>'
+      : '<input class="hcInput" id="hcf-' + k + '" type="' + type + '" data-f="' + k + '"' + (note ? ' aria-describedby="hcf-' + k + '-note"' : '') + ' placeholder="' + esc(ph) + '" value="' + esc(me[k]) + '">') +
+    (note || CHECKS[k] ? '<span class="hcFieldNote" id="hcf-' + k + '-note" data-note="' + esc(note) + '"' + (note ? '' : ' hidden') + '>' + note + '</span>' : '') + '</div>';
+  const title = (k, label, forId) => '<div class="hcFieldTitle">' + (forId ? '<label class="hcFieldName" for="' + forId + '">' : '<span class="hcFieldName">') + label + (forId ? '</label>' : '</span>') +
+    '<button class="hcInfoBtn" type="button" aria-expanded="false" aria-label="About ' + esc(label) + '" data-info-title="' + esc(label) + '" data-info-text="' + esc(ABOUT[k]) + '" data-info-more="' + LEARN + '">' + icon('mdi:information-outline') + '</button></div>';
   const BACK = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18L9 12L15 6"/></svg>';
   const panelHead = (title) => '<div class="settingsHeader tfAreaHead hcPanelHead"><button class="back" type="button" data-acc-back aria-label="Back to My account">' + BACK + '</button><div class="settingsTitle">' + esc(title) + '</div></div>';
   // the rows other than My profile open a page the same way (Matt, 9 Nov); none is designed yet, so each says so
@@ -45,7 +65,7 @@ export function renderAccount(page, { esc, icon, go, root, glyph, paint, head })
         '<section class="card hcFields"><div class="hcCardTitle">Contact information</div>' +
           field('mail', 'Mail address', 'name@example.com', 'email') + field('phone', 'Phone number', '+31 6 1234 5678', 'tel') + '</section>' +
         '<section class="card hcFields"><div class="hcCardTitle">About me</div>' + field('about', 'About', 'Say a little about yourself', 'area') +
-          '<div class="hcField"><span class="hcFieldName">Home Assistant user since</span><span class="hcSince">14 March 2023</span></div></section>' +
+          '<div class="hcField">' + title('since', 'Home Assistant user since') + '<span class="hcSince">14 March 2023</span></div></section>' +
       '</div>' +
       others.map(([k, name]) => '<div class="hcPanel" data-panel="' + k + '" hidden>' + panelHead(name) +
         '<section class="card hcFields hcSoon"><div class="hcCardTitle">' + esc(name) + '</div><p>Oops! We haven\'t designed this yet. Let\'s add it to the list :)</p>' +
@@ -69,9 +89,24 @@ export function renderAccount(page, { esc, icon, go, root, glyph, paint, head })
     if (b.dataset.acc === 'appearance') { go('settings'); return; }
     open(b.dataset.acc, true);
   });
+  // wrong: the danger ring and the note says what to fix; right (or empty): back to its own note
+  const check = (el, strict) => {
+    const k = el.dataset.f, c = CHECKS[k], note = page.querySelector('#hcf-' + k + '-note');
+    if (!c || !note) return;
+    const v = el.value.trim(), bad = Boolean(v) && !c[0](v);
+    if (bad && !strict && el.getAttribute('aria-invalid') !== 'true') return; // while typing it only clears, never scolds
+    if (bad) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
+    note.classList.toggle('hcFieldError', bad);
+    note.textContent = bad ? c[1] : note.dataset.note;
+    note.hidden = !note.textContent;
+    if (note.hidden) el.removeAttribute('aria-describedby'); else el.setAttribute('aria-describedby', note.id);
+  };
+  page.querySelectorAll('.hcInput').forEach((el) => { if (el.value) check(el, true); }); // what was kept, checked again
+  page.addEventListener('focusout', (ev) => { if (ev.target.dataset?.f) check(ev.target, true); });
   page.addEventListener('input', (ev) => {
     const k = ev.target.dataset.f;
     if (!k) return;
+    check(ev.target, false);
     me[k] = ev.target.value;
     local.set(me);
     if (k === 'name') root.querySelectorAll('[data-hc-account] .hcMeName').forEach((el) => { el.textContent = me.name || 'Me'; });
