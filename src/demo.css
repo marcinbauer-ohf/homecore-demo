@@ -209,6 +209,13 @@
 .hcAccount[data-err] .hcFieldNote.hcFieldError{font:400 12px/16.8px var(--font)}
 .hcAccount[data-err="title"] .hcField:has(>.hcFieldError){grid-template-areas:"note" "box"}
 .hcAccount[data-err="title"] .hcField:has(>.hcFieldError)>.hcFieldTitle{display:none}
+/* Replace title: what's wrong as big as the title it replaces (14/20), so the line doesn't change size, and it fades in
+   quickly, as the title does when it comes back (Matt, 19 Nov: "Keep the replace text be the same size so it doesn't jump
+   in size, and make it fade in quickly rather than suddenly change") */
+.hcAccount[data-err="title"] .hcField>.hcFieldNote.hcFieldError{font:400 14px/20px var(--font)}
+.hcAccount[data-err="title"] .hcField>.hcFieldError,.hcAccount[data-err="title"] .hcField.hcErrWas>.hcFieldTitle{animation:hcErrIn .18s ease-out}
+@keyframes hcErrIn{from{opacity:0}}
+@media(prefers-reduced-motion:reduce){.hcAccount[data-err="title"] .hcField>*{animation:none!important}}
 .hcAccount[data-err="line"] .hcField:has(>.hcFieldError){grid-template-columns:auto minmax(0,1fr);grid-template-areas:"title note" "box box";align-items:center;column-gap:12px}
 .hcAccount[data-err="line"] .hcField>.hcFieldError{justify-self:end;padding-left:0;text-align:right}
 @container hcpage (width < 760px){

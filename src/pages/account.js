@@ -111,7 +111,11 @@ export function renderAccount(page, { esc, icon, go, root, glyph, paint, head })
     if (!c || !note) return;
     const v = el.value.trim(), bad = Boolean(v) && !c[0](v);
     if (bad && !strict && el.getAttribute('aria-invalid') !== 'true') return; // while typing it only clears, never scolds
+    const was = el.getAttribute('aria-invalid') === 'true', field = el.closest('.hcField');
     if (bad) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
+    // put right: its title fades back in (Replace title), so the class is new each time
+    field.classList.remove('hcErrWas');
+    if (was && !bad) { void field.offsetWidth; field.classList.add('hcErrWas'); }
     note.classList.toggle('hcFieldError', bad);
     note.textContent = bad ? c[1] : note.dataset.note;
     note.hidden = !note.textContent;
