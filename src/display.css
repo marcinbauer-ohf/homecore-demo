@@ -547,20 +547,16 @@ button.tfAreaIcon{cursor:pointer}
 @keyframes tfAreaOut{to{translate:calc(var(--dir,1) * (-100% - 16px)) 0}}
 @keyframes tfAreaIn{from{translate:calc(var(--dir,1) * (100% + 16px)) 0}}
 @media(prefers-reduced-motion:reduce){.tfAreaStage>*{animation:none!important}}
-/* Home's two ways to its areas, to try (Matt, 19 Nov; ?nav=a or ?nav=b). B: Home and its areas as Icon buttons (Figma
-   902:2536) in a row under the name, 8 apart, the one showing On; on a phone eight to a row inside the page's 16, as the
-   dashboard's areas. A: the Areas card's tiles as Favourites' are, each opening its area */
-.hcAreaTabs{display:flex;flex-wrap:wrap;gap:8px}
-#app .hcAreaTabs .tfAreaPick{border:0;padding:0;background:var(--hc-icon);color:var(--hc-icon-ink);cursor:pointer}
-#app .hcAreaTabs .tfAreaPick.on[data-light]{background:var(--light-soft);color:var(--light-ink)}
-@media(max-width:620px){
-  .hcAreaTabs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));padding:0 16px}
-  #app .hcAreaTabs .tfAreaPick{width:100%;height:auto;aspect-ratio:1;border-radius:40%}
-}
-#homeView .card.hcAreaList>.activityRows{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))} /* Favourites' tile widths, as many across as fit */
-@media(max-width:620px){#homeView .card.hcAreaList>.activityRows{grid-template-columns:repeat(2,minmax(0,1fr))}} /* two across on a phone, as Favourites */
-.hcAreaRow{width:100%;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
-.hcAreaRowText{display:flex;flex-direction:column;min-width:0}
+/* an area opened inside Home (?nav=a or b; Matt, 19 Nov): where the area cards were, its header (the back arrow and its
+   name, a card title's size) then its page's cards and tiles, as many across as fit at the dashboard's 200 and up, a card
+   two wide; on a phone the cards the whole width, the tiles two across */
+.hcAreaIn{display:flex;flex-direction:column;gap:16px;min-width:0}
+#app .hcAreaInHead{display:flex;align-items:center;gap:8px;margin:0;padding:0}
+#app .hcAreaInHead .settingsTitle{margin:0;font:600 24px/1.2 var(--font-tile);letter-spacing:-.01em}
+.hcAreaInGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));grid-auto-flow:row dense;gap:16px;align-items:start;min-width:0} /* (dense: tiles fill the cell beside a card) */
+.hcAreaInGrid>.card{grid-column:span 2;margin:0}
+#app .hcAreaInGrid>.tfAction{grid-column:span 1;min-width:0}
+@media(max-width:620px){.hcAreaIn{padding:0}.hcAreaInHead{padding:0 16px!important}.hcAreaInGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hcAreaInGrid>.card{grid-column:1/-1}}
 /* the summaries: each as wide as its words (at least 200), in even rows (the board picks how many to a row), the bar as
    wide as they are; two to a row on phones */
 #app.tfDash .tfDash-bar{flex:none;max-width:100%}
