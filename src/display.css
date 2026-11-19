@@ -534,16 +534,18 @@ button.tfAreaIcon{cursor:pointer}
 @media(max-width:620px){
   #app .tfAreas .tfAreaGallery{display:none}
   #app .tfAreas .tfAreaPhone{display:flex;flex-direction:column;gap:14px}
-  .tfAreaStage{position:relative;flex:none;aspect-ratio:1325/982;min-height:0;touch-action:pan-y} /* (min-height 0: a fuller room grew it by its content) */
+  .tfAreaStage{position:relative;flex:none;aspect-ratio:1325/982;min-height:0;overflow:clip;touch-action:pan-y} /* (min-height 0: a fuller room grew it by its content; clipped, so a card sliding past the screen's edge doesn't widen the page) */
   .tfAreaStage>.tfRoomTile{height:100%;box-sizing:border-box;overflow:hidden}
   .tfAreaPicks{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;padding:0 16px}
   #app .tfAreaPick{width:100%;height:auto;aspect-ratio:1;border:0;padding:0;border-radius:40%;background:var(--hc-icon);color:var(--hc-icon-ink);cursor:pointer}
   #app .tfAreaPick.on[data-light]{background:var(--light-soft);color:var(--light-ink)}
-  /* another area: the one going fades away over the card, the one coming lands (the light popup's tfVLand) */
-  .tfAreaStage>.tfAreaGoing{position:absolute;inset:0;pointer-events:none;animation:tfAreaGo .18s ease forwards}
-  .tfAreaStage>.tfAreaLand{animation:tfVLand .42s cubic-bezier(.34,1.46,.64,1) backwards}
+  /* another area slides in (Matt, 19 Nov): the one going leaves one way, the one coming takes its place from the other,
+     a page's gap (16) apart; --dir is 1 for one further along, -1 for one before */
+  .tfAreaStage>.tfAreaGoing{position:absolute;inset:0;pointer-events:none;animation:tfAreaOut .32s cubic-bezier(.2,.7,.3,1) forwards}
+  .tfAreaStage>.tfAreaLand{animation:tfAreaIn .32s cubic-bezier(.2,.7,.3,1) backwards}
 }
-@keyframes tfAreaGo{to{opacity:0}}
+@keyframes tfAreaOut{to{translate:calc(var(--dir,1) * (-100% - 16px)) 0}}
+@keyframes tfAreaIn{from{translate:calc(var(--dir,1) * (100% + 16px)) 0}}
 @media(prefers-reduced-motion:reduce){.tfAreaStage>*{animation:none!important}}
 /* the summaries: each as wide as its words (at least 200), in even rows (the board picks how many to a row), the bar as
    wide as they are; two to a row on phones */
