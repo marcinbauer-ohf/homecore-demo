@@ -547,6 +547,20 @@ button.tfAreaIcon{cursor:pointer}
 @keyframes tfAreaOut{to{translate:calc(var(--dir,1) * (-100% - 16px)) 0}}
 @keyframes tfAreaIn{from{translate:calc(var(--dir,1) * (100% + 16px)) 0}}
 @media(prefers-reduced-motion:reduce){.tfAreaStage>*{animation:none!important}}
+/* Home's two ways to its areas, to try (Matt, 19 Nov; ?nav=a or ?nav=b). B: Home and its areas as Icon buttons (Figma
+   902:2536) in a row under the name, 8 apart, the one showing On; on a phone eight to a row inside the page's 16, as the
+   dashboard's areas. A: the Areas card's tiles as Favourites' are, each opening its area */
+.hcAreaTabs{display:flex;flex-wrap:wrap;gap:8px}
+#app .hcAreaTabs .tfAreaPick{border:0;padding:0;background:var(--hc-icon);color:var(--hc-icon-ink);cursor:pointer}
+#app .hcAreaTabs .tfAreaPick.on[data-light]{background:var(--light-soft);color:var(--light-ink)}
+@media(max-width:620px){
+  .hcAreaTabs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));padding:0 16px}
+  #app .hcAreaTabs .tfAreaPick{width:100%;height:auto;aspect-ratio:1;border-radius:40%}
+}
+#homeView .card.hcAreaList>.activityRows{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))} /* Favourites' tile widths, as many across as fit */
+@media(max-width:620px){#homeView .card.hcAreaList>.activityRows{grid-template-columns:repeat(2,minmax(0,1fr))}} /* two across on a phone, as Favourites */
+.hcAreaRow{width:100%;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.hcAreaRowText{display:flex;flex-direction:column;min-width:0}
 /* the summaries: each as wide as its words (at least 200), in even rows (the board picks how many to a row), the bar as
    wide as they are; two to a row on phones */
 #app.tfDash .tfDash-bar{flex:none;max-width:100%}

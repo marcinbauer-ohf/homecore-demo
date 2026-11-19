@@ -408,6 +408,13 @@ export function mountTestFocus(root, { config, getHass }) {
   const hold = (key) => dragGen.set(key, (dragGen.get(key) || 0) + 1);
   const lockedKeys = () => [...new Set([...dragging.keys(), ...pressed])];
   let stale = false; // a redraw was skipped for a held bar; it's done once the bar is let go
+  /* two ways to Home's areas, to try (Matt, 19 Nov: "keep the title, welcome, summaries and favourites, and just change
+     the other stuff… One keeps the summaries etc being the home and the other changes the summaries etc to the area"),
+     picked by the address: ?nav=a or ?nav=b. A: Home stays Home, and its areas are one Areas card of tiles, each
+     opening its area's page. B: a row of Icon buttons under the name, Home and each area; an area turns the name, the
+     summaries and Favourites into that area's. Without either, Home is as it was */
+  const NAV = (() => { try { return new URLSearchParams(location.search).get('nav'); } catch (_e) { return null; } })();
+  let homeArea = null; // B: the area Home is showing, or null for Home
   let areaSliding = 0; // a phone's area is sliding in: its card isn't redrawn under it till it's done
   const BAR_SLOP = 6; // how far a finger goes before it's sliding a bar or scrolling the page
   let heldBar = null; // the bar a finger is moving, if any
@@ -1733,22 +1740,63 @@ export function mountTestFocus(root, { config, getHass }) {
     return '<section class="card tfCard tfDashCard tfDash-sched" data-tf data-k="dash:sched" aria-label="Schedule"><div class="activityHeader"><div class="activityTitle">Schedule</div></div>' +
       '<div class="hcSchedList">' + dayList(0, 'Today') + dayList(1, 'Tomorrow') + '</div></section>';
   }
+  // A: an area as a tile in the Areas card: its icon, its name and its main reading; it opens the area's page
+  const areaRow = (r) => {
+    const main = mainOf(r), h = main && headline(main), meta = h ? h.text + (h.unit ? ' ' + h.unit : '') : '';
+    return '<button class="activityRow hcAreaRow" type="button" data-go="' + esc(r.id) + '" aria-label="' + esc(r.name + (meta ? ', ' + meta : '') + '. Open') + '">' +
+      '<span class="tfIcon" aria-hidden="true"><span class="tfAreaGlyph"' + iconSlot('area:' + r.id, r.icon || 'mdi:texture-box', r.name) + '></span></span>' +
+      '<span class="hcAreaRowText"><span class="activityRowName">' + esc(r.name) + '</span>' + (meta ? '<span class="activityRowMeta">' + esc(meta) + '</span>' : '') + '</span></button>';
+  };
+  // B: Home and its areas as Icon buttons (Figma 902:2536), the one showing On, each named by its label and the tooltip
+  const areaTabs = (scope) => {
+    const btn = (id, name, glyph, on) => '<button class="tfIcon tfAreaPick' + (on ? ' on' : '') + '" type="button" data-home-area="' + esc(id) + '"' + (on ? ' data-light style="' + PICK_ON + '"' : '') + ' aria-label="' + esc(name) + '" aria-pressed="' + on + '">' + glyph + '</button>';
+    return '<nav class="hcAreaNav hcAreaTabs" data-tf data-k="dash:areanav" aria-label="Areas">' + btn('', 'Home', '<span class="tfAreaGlyph"' + iconSlot('area:home', 'mdi:home', 'Home') + '></span>', !scope) +
+      overviewRooms().map((r) => btn(r.id, r.name, '<span class="tfAreaGlyph"' + iconSlot('area:' + r.id, r.icon || 'mdi:texture-box', r.name) + '></span>', scope?.id === r.id)).join('') + '</nav>';
+  };
+  // B: one of an area's summaries, from its area card's keys: a reading opens its device, the lights (or covers…) their group
+  const keyId = (k) => k.id || k.key.match(/^(?:alert|note):(.+)$/)?.[1] || null; // an alert or a note keeps its device in its key
+  const scopedSum = (r, k) => {
+    const id = keyId(k), ids = id ? [id] : groupIds(r, k.key), more = ids.length === 1 ? ids[0] : ids.length ? 'group:' + r.id + ':' + k.key : '';
+    // an alert or a note says its device's state under its name ("Balcony door", "Open"), as the others do
+    if (k.value == null && id) k = { ...k, label: k.kind === 'note' ? nameOf(id) : k.label, value: valueOf(id) };
+    const look = k.kind === 'alert' ? '--sum:#e53935;--sum-ink:#ffffff' : k.on && k.light ? k.light + ';--sum:var(--light-soft);--sum-ink:var(--light-ink)' : '';
+    return '<div class="activityRow tap tfSum" role="button" tabindex="0"' + (more ? ' data-more="' + esc(more) + '"' : '') + ' data-k="sum:' + esc(k.key) + '" aria-label="' + esc(k.label + ', ' + k.value) + '"' + (look ? ' style="' + look + '"' : '') + '>' +
+      '<div class="tfIcon" aria-hidden="true">' + k.icon + '</div><div><div class="activityRowName">' + esc(k.label) + '</div><div class="activityRowMeta">' + esc(k.value) + '</div></div></div>';
+  };
   const dashWrap = (cls, key, label, titled) => (inner) => '<section class="card tfCard tfDashCard ' + cls + '" data-tf data-k="' + key + '" aria-label="' + label + '">' +
     (titled ? '<div class="activityHeader">' + (key === 'favs' ? '<button class="activityTitle tfTitleBtn" type="button" data-more="favourites" aria-label="Favourites. More info">' + label + '</button>' : '<div class="activityTitle">' + label + '</div>') + '</div>' : '') + '<div class="activityRows">' + inner + '</div></section>';
   function dashboard(out, sums) {
     out.dash = true;
-    out.push({ key: 'dash:title', html: '<h1 class="settingsTitle tfDashTitle" data-tf data-k="dash:title">' + ((overview ? welcomeOn() : dashPrefs().welcome) ? '<span class="tfGreeting">' + esc(greeting()) + '</span>' : '') + esc(getHass()?.config?.location_name || 'Home') + '</h1>' });
+    const navB = overview && NAV === 'b', scope = navB && overviewRooms().find((r) => r.id === homeArea);
+    if (navB && !scope) homeArea = null;
+    const homeName = getHass()?.config?.location_name || 'Home';
+    // B: an area's name in the name's place, the home's over it where the welcome is
+    out.push({ key: 'dash:title', html: '<h1 class="settingsTitle tfDashTitle" data-tf data-k="dash:title">' + (scope ? '<span class="tfGreeting">' + esc(homeName) + '</span>' + esc(scope.name)
+      : ((overview ? welcomeOn() : dashPrefs().welcome) ? '<span class="tfGreeting">' + esc(greeting()) + '</span>' : '') + esc(homeName)) + '</h1>' });
+    if (navB) out.push({ key: 'dash:areanav', html: areaTabs(scope) });
+    // B, an area: its own summaries, what its area card knows (each opens what it stands for)
+    if (scope) {
+      const keys = roomKeys(scope), main = mainOf(scope), h = main && headline(main);
+      // its main first, as its card leads with it (the Kitchen's leak sensor, "Dry"), where it isn't one already
+      if (h && !keys.some((k) => keyId(k) === main || groupIds(scope, k.key).includes(main))) keys.unshift({ key: 'main', id: main, kind: 'reading', icon: areaGlyph(main), label: inRoom(scope, main), value: h.text + (h.unit ? ' ' + h.unit : '') });
+      sums = keys.map((k) => ({ scoped: true, r: scope, k }));
+    }
     // the summaries: a row of their own, the bar only as wide as its tiles
-    if (sums.length) out.push({ key: 'sums', wrap: (inner) => '<div class="tfDashBarRow" data-tf data-k="sums">' + dashWrap('tfDash-bar', 'sums-bar', 'Summaries', false)(inner).replace(' data-tf', '') + '</div>', tiles: sums.map((s) => ({ key: 'sum:' + s.key, html: summaryRow(s) })) });
+    if (sums.length) out.push({ key: 'sums', wrap: (inner) => '<div class="tfDashBarRow" data-tf data-k="sums">' + dashWrap('tfDash-bar', 'sums-bar', 'Summaries', false)(inner).replace(' data-tf', '') + '</div>', tiles: sums.map((s) => (s.scoped ? { key: 'sum:' + s.k.key, html: scopedSum(s.r, s.k) } : { key: 'sum:' + s.key, html: summaryRow(s) })) });
     if (!overview && areasShown().length) out.push({ key: 'areas', html: areasHtml(0) });
     // what you've starred always shows, from any room; only the suggestions that fill the card keep to the dashboard's rooms
-    const favs = dashFavourites();
-    if (favs.length) out.push({ key: 'favs', wrap: dashWrap('tfDash-favs', 'favs', 'Favourites', true), tiles: favs.map((id) => ({ key: 'fav:' + id, html: deviceRow(id, { area: true }) })) });
+    // B, an area: its devices, the ones you've starred first
+    const favs = scope ? [...new Set([...scope.actions, ...scope.plugs, ...(scope.locks || [])])].filter((id) => states[id]).sort((a, b) => Number(starred().includes(b)) - Number(starred().includes(a))) : dashFavourites();
+    if (favs.length) out.push({ key: 'favs', wrap: dashWrap('tfDash-favs', 'favs', 'Favourites', true), tiles: favs.map((id) => ({ key: 'fav:' + id, html: deviceRow(id, { area: !scope }) })) });
     if (overview) {
+      if (scope) return out; // B, an area: only its name, summaries and favourites
       // Energy today, as on Dashboards (Matt, 12 Nov: "add energy stuff"), once switched on in Edit Home page (off to start
       // with: "by default do not show the energy")
       if (prefs.home?.energy) { out.push({ key: 'dash:energy', html: energyGlance() }); loadEnergy(); }
       if (prefs.home?.schedule !== false) out.push({ key: 'dash:sched', html: scheduleCard() });
+      // A: the areas as one card of tiles; B: the row under the name is their way in
+      if (NAV === 'a') out.push({ key: 'dash:areanav', html: dashWrap('hcAreaNav hcAreaList', 'dash:areanav', 'Areas', true)(overviewRooms().map(areaRow).join('')) });
+      if (NAV === 'a' || NAV === 'b') return out;
       dashTileIds(0).forEach((id) => out.push({ key: 'dash:tile:' + id, wrap: (inner) => '<div class="tfDashTiles" data-tf data-k="dash:tile:' + esc(id) + '">' + inner + '</div>',
         tiles: [{ key: id, html: roomTile(roomOf(id), id) }] }));
       return out;
@@ -1843,7 +1891,7 @@ export function mountTestFocus(root, { config, getHass }) {
   // what's on the board: each card's key, its element, its width in pegs ('full' the whole width) and whether it's a tile
   function boardItems() {
     const q = (sel) => grid.querySelector(sel);
-    return [['title', q('.tfDashTitle'), 'full'], ['sums', q('.tfDashBarRow'), 'full'], ['wx', dashBoxes.wx, 2], ['areas', q('.tfAreas'), 'areas'],
+    return [['title', q('.tfDashTitle'), 'full'], ['areanav', q('.hcAreaNav'), 'full'], ['sums', q('.tfDashBarRow'), 'full'], ['wx', dashBoxes.wx, 2], ['areas', q('.tfAreas'), 'areas'],
       ['favs', q('.tfDash-favs'), 2], ['sched', q('.tfDash-sched'), 2], ['act', q('.tfDash-act'), 2], ['energy', q('.tfDash-energy'), 2], ['avg', dashBoxes.avg, 2],
       ...NEW_CARDS.map((k) => [k, dashBoxes[k], WIDGET_COLS[k] || 1]),
       ...[...grid.querySelectorAll('.tfDashTiles > [data-k]')].map((el) => [el.dataset.k, el, 1, true])]
@@ -2160,8 +2208,8 @@ export function mountTestFocus(root, { config, getHass }) {
     const strip = favsStrip();
     app.classList.toggle('hcSumsFit', sumsFit());
     app.classList.toggle('hcFavStrip', strip);
-    const heads = shown.filter((it) => HEAD.includes(it.key) || (strip && it.key === 'favs'));
-    heads.sort((a, b) => ['title', 'sums', 'favs'].indexOf(a.key) - ['title', 'sums', 'favs'].indexOf(b.key));
+    const heads = shown.filter((it) => HEAD.includes(it.key) || (strip && it.key === 'favs') || (NAV === 'b' && it.key === 'areanav'));
+    heads.sort((a, b) => ['title', 'areanav', 'sums', 'favs'].indexOf(a.key) - ['title', 'areanav', 'sums', 'favs'].indexOf(b.key));
     heads.forEach((it) => {
       it.el.classList.add('tfBoardItem');
       it.el.toggleAttribute('data-narrow', false);
@@ -2278,6 +2326,16 @@ export function mountTestFocus(root, { config, getHass }) {
     // in a floor's box its name starts where its areas' icons do (Matt, 12 Nov), the cards' own padding in
     const cardPad = (f) => parseFloat(getComputedStyle(f.cards[0].el).paddingLeft) || 0;
     const place = (f, g, x0, y0, indent = 0) => { headAt(f, x0 + indent, y0, (g.w ?? W) - indent); g.places.forEach((p) => put(p.it, { x: x0 + p.x, y: y0 + p.y, w: p.w, h: p.h })); };
+    // A: the Areas card where the areas were, as wide as their part and as tall as its tiles
+    const navA = NAV === 'a' && shown.find((it) => it.key === 'areanav');
+    if (navA) {
+      navA.el.classList.add('tfBoardItem');
+      navA.el.dataset.rows = 5; navA.el.dataset.cols = 2; navA.el.toggleAttribute('data-narrow', false);
+      Object.assign(navA.el.style, { width: aW + 'px', height: '' });
+      const h = navA.el.offsetHeight;
+      put(navA, { x: aX, y: top, w: aW, h });
+      top += h + gap;
+    }
     if (floors.length && tops.length && !side) top += HOME.floorTop;
     if (columns) {
       // a column per floor, as wide as a card, side by side; more floors than fit go on under the tallest
@@ -2346,7 +2404,7 @@ export function mountTestFocus(root, { config, getHass }) {
     oldBoxes.forEach((el) => el.remove());
     if (!homeDrag?.on) homeLand(null);
     grid.style.height = Math.max(0, top - gap) + 'px';
-    readingOrder([...shown.filter((it) => HEAD.includes(it.key)).map((it) => it.el), ...tops.map((it) => it.el), ...floorHeads, ...floors.flatMap((f) => f.cards.map((it) => it.el))]);
+    readingOrder([...heads.map((it) => it.el), ...tops.map((it) => it.el), ...(navA ? [navA.el] : []), ...floorHeads, ...floors.flatMap((f) => f.cards.map((it) => it.el))]);
     editTools(false);
     // while Edit Home page is open the cards rest: a tap doesn't work their controls or open them
     items.forEach((it) => [...it.el.children].forEach((c) => c.toggleAttribute('inert', homeEditing)));
@@ -4576,7 +4634,7 @@ export function mountTestFocus(root, { config, getHass }) {
   // the same controls work on the page and in the stand-in more-info
   function bindControls(el) {
     el.addEventListener('click', (ev) => {
-      const t = ev.target.closest('[data-act],[data-acts],[data-more],[data-more-close],[data-more-back],[data-details],[data-details-close],[data-go],[data-summary],[data-star],[data-favs-edit],[data-area-back],[data-board-more],[data-board-act],[data-board-show],[data-fav-hide],[data-energy-pick],[data-more-page],[data-path],[data-area-pick],.tfAreaPanel');
+      const t = ev.target.closest('[data-act],[data-acts],[data-more],[data-more-close],[data-more-back],[data-details],[data-details-close],[data-go],[data-summary],[data-star],[data-favs-edit],[data-area-back],[data-board-more],[data-board-act],[data-board-show],[data-fav-hide],[data-energy-pick],[data-more-page],[data-path],[data-area-pick],[data-home-area],.tfAreaPanel');
       if (boardOpen && !ev.target.closest('.tfBoardMenu,[data-board-more]')) closeBoardMenu();
       if (!t || !el.contains(t) || t.disabled) return;
       if (t.dataset.boardMore) { if (boardOpen?.key === t.dataset.boardMore) closeBoardMenu(true); else openBoardMenu(t.dataset.boardMore, t); }
@@ -4585,6 +4643,7 @@ export function mountTestFocus(root, { config, getHass }) {
       else if (t.dataset.favHide) setFavShown(t.dataset.favHide, false);
       else if (t.dataset.energyPick) pickEnergy(t.dataset.energyPick);
       else if (t.dataset.areaPick) pickPhoneArea(t.dataset.areaPick);
+      else if (t.dataset.homeArea != null) { homeArea = t.dataset.homeArea || null; render(); grid.querySelector('[data-home-area="' + CSS.escape(t.dataset.homeArea) + '"]')?.focus({ preventScroll: true }); }
       else if (t.dataset.act) run(t.dataset.act);
       else if (t.hasAttribute('data-details')) toggleDetails(!more?.details);
       else if (t.hasAttribute('data-details-close')) toggleDetails(false);
