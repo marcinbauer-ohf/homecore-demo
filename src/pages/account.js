@@ -27,12 +27,6 @@ const CHECKS = {
   mail: [(v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'Enter a mail address, like name@example.com'],
   phone: [(v) => /^\+?[\d\s().-]+$/.test(v) && (v.match(/\d/g) || []).length >= 7 && (v.match(/\d/g) || []).length <= 15, 'Enter a phone number, like +31 6 1234 5678'],
 };
-/* where a field says what's wrong, three ways to try (Matt, 19 Nov: "I want to try out error options for the fields… give
-   me a toggle to go between them"; Figma 1251:25491): in the title's place, under the field, or at the end of the title
-   line. Picked with the toggle at the top of My profile, kept in this browser */
-const ERR_KEY = 'homecore-demo-field-errors';
-const ERR_WAYS = [['title', 'Replace title'], ['below', 'Below'], ['line', 'Title line']];
-const errWay = () => { try { const v = localStorage.getItem(ERR_KEY); return ERR_WAYS.some(([k]) => k === v) ? v : 'title'; } catch (_e) { return 'title'; } };
 const local = {
   get() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (_e) { return {}; } },
   set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (_e) { /* not remembered */ } },
@@ -59,11 +53,10 @@ export function renderAccount(page, { esc, icon, go, root, glyph, paint, head })
   // the rows other than My profile open a page the same way (Matt, 9 Nov); none is designed yet, so each says so
   const others = GROUPS.flat().filter(([k]) => k !== 'profile' && k !== 'appearance');
   page.innerHTML =
-    '<div class="hcAccount" data-err="' + errWay() + '">' +
+    '<div class="hcAccount">' +
       head('My account') +
       '<div class="hcAccList">' + GROUPS.map((g) => '<section class="card hcRowsCard">' + g.map(row).join('') + '</section>').join('') + '</div>' +
       '<div class="hcPanel" data-panel="profile">' + panelHead('My profile') +
-        '<div class="tfSeg hcErrSeg" role="group" aria-label="Where a field says what\'s wrong">' + ERR_WAYS.map(([k, t]) => '<button type="button" data-err-way="' + k + '" aria-pressed="' + (k === errWay()) + '">' + t + '</button>').join('') + '</div>' +
         // the photo from the top left, level with the first row (Matt, 9 Nov)
         '<div class="hcPhoto"><img src="' + photo + '" alt="Your photo"><div class="hcPhotoActions"><button class="hcBtn" type="button" data-oops>Change photo</button><button class="pill" type="button" data-oops>Remove</button></div></div>' +
         '<section class="card hcFields">' + field('name', 'Name', 'Your name') + field('nickname', 'Nickname', 'Add a nickname') +
@@ -89,15 +82,6 @@ export function renderAccount(page, { esc, icon, go, root, glyph, paint, head })
     wrap.classList.toggle('hcShowPanel', Boolean(narrowToo));
     window.scrollTo(0, 0);
   };
-  // the toggle: another way to show what's wrong; with nothing wrong yet, the Figma's wrong mail address shows it (not kept)
-  page.querySelector('.hcErrSeg').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-err-way]');
-    if (!b) return;
-    wrap.dataset.err = b.dataset.errWay;
-    try { localStorage.setItem(ERR_KEY, b.dataset.errWay); } catch (_e) { /* not kept */ }
-    page.querySelectorAll('[data-err-way]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-    if (!page.querySelector('.hcInput[aria-invalid="true"]')) { const mail = page.querySelector('#hcf-mail'); mail.value = 'home@youcom'; check(mail, true); }
-  });
   page.addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-acc],[data-acc-back]');
     if (!b) return;
@@ -111,11 +95,7 @@ export function renderAccount(page, { esc, icon, go, root, glyph, paint, head })
     if (!c || !note) return;
     const v = el.value.trim(), bad = Boolean(v) && !c[0](v);
     if (bad && !strict && el.getAttribute('aria-invalid') !== 'true') return; // while typing it only clears, never scolds
-    const was = el.getAttribute('aria-invalid') === 'true', field = el.closest('.hcField');
     if (bad) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
-    // put right: its title fades back in (Replace title), so the class is new each time
-    field.classList.remove('hcErrWas');
-    if (was && !bad) { void field.offsetWidth; field.classList.add('hcErrWas'); }
     note.classList.toggle('hcFieldError', bad);
     note.textContent = bad ? c[1] : note.dataset.note;
     note.hidden = !note.textContent;
