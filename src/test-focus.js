@@ -420,14 +420,6 @@ export function mountTestFocus(root, { config, getHass }) {
   const hold = (key) => dragGen.set(key, (dragGen.get(key) || 0) + 1);
   const lockedKeys = () => [...new Set([...dragging.keys(), ...pressed])];
   let stale = false; // a redraw was skipped for a held bar; it's done once the bar is let go
-  /* an area opened inside Home, two ways to try (Matt, 19 Nov: "when clicking on the CURRENT area card, KEEP the greeting,
-     title, summaries, favourites but change the rest to be that area… the two versions would mean that the summaries and
-     favourites kept the home values, and the other option changing the summaries to be for that area"), picked by the
-     address: ?nav=a or ?nav=b. Either way an area card's Open shows that area under Home's top in place of the rest (its
-     schedule and area cards), with a back arrow to them; A keeps Home's summaries and Favourites, B shows the area's.
-     Without either, an area opens its own page as before */
-  const NAV = (() => { try { const v = new URLSearchParams(location.search).get('nav'); return v === 'a' || v === 'b' ? v : null; } catch (_e) { return null; } })();
-  let homeArea = null; // the area open inside Home, or null
   let areaSliding = 0; // a phone's area is sliding in: its card isn't redrawn under it till it's done
   const BAR_SLOP = 6; // how far a finger goes before it's sliding a bar or scrolling the page
   let heldBar = null; // the bar a finger is moving, if any
@@ -1787,54 +1779,18 @@ export function mountTestFocus(root, { config, getHass }) {
     return '<section class="card tfCard tfDashCard tfDash-sched" data-tf data-k="dash:sched" aria-label="Schedule"><div class="activityHeader"><div class="activityTitle">Schedule</div></div>' +
       '<div class="hcSchedList">' + dayList(0, 'Today') + dayList(1, 'Tomorrow') + '</div></section>';
   }
-  // B: one of an area's summaries, from its area card's keys: a reading opens its device, the lights (or covers…) their group
-  const keyId = (k) => k.id || k.key.match(/^(?:alert|note):(.+)$/)?.[1] || null; // an alert or a note keeps its device in its key
-  const scopedSum = (r, k) => {
-    const id = keyId(k), ids = id ? [id] : groupIds(r, k.key), more = ids.length === 1 ? ids[0] : ids.length ? 'group:' + r.id + ':' + k.key : '';
-    // an alert or a note says its device's state under its name ("Balcony door", "Open"), as the others do
-    if (k.value == null && id) k = { ...k, label: k.kind === 'note' ? nameOf(id) : k.label, value: valueOf(id) };
-    const look = k.kind === 'alert' ? '--sum:#e53935;--sum-ink:#ffffff' : k.on && k.light ? k.light + ';--sum:var(--light-soft);--sum-ink:var(--light-ink)' : '';
-    return '<div class="activityRow tap tfSum" role="button" tabindex="0"' + (more ? ' data-more="' + esc(more) + '"' : '') + ' data-k="sum:' + esc(k.key) + '" aria-label="' + esc(k.label + ', ' + k.value) + '"' + (look ? ' style="' + look + '"' : '') + '>' +
-      '<div class="tfIcon" aria-hidden="true">' + k.icon + '</div><div><div class="activityRowName">' + esc(k.label) + '</div><div class="activityRowMeta">' + esc(k.value) + '</div></div></div>';
-  };
-  // an area inside Home: its header, the back arrow returning to the area cards, then its page's cards and tiles (its
-  // energy, readings and plants, then its devices), each a unit of its own so a held bar keeps its tile
-  const areaInHome = (r) => {
-    const sec = sectionsOf().find((x) => x.room === r), ids = sec?.ids || r.actions, nest = (h) => h.replace(' data-tf', '');
-    const tiles = [
-      ...(r.solar.length ? [{ key: 'energy:' + r.id, html: nest(energyCard(r, 0)) }] : []),
-      ...(r.readings.length || r.power != null ? [{ key: 'readings:' + r.id, html: nest(roomCard(r, 0)) }] : []),
-      ...r.plants.map((pl) => ({ key: 'plant:' + pl.id, html: nest(plantCard(pl, 0)) })),
-      ...[...ids, ...r.plugs.filter((x) => !ids.includes(x))].map((id) => ({ key: id, html: actionTile(id) })),
-    ];
-    return { key: 'dash:areain', tiles, wrap: (inner) => '<section class="hcAreaIn" data-tf data-k="dash:areain" aria-label="' + esc(r.name) + '">' +
-      '<div class="settingsHeader hcAreaInHead"><button class="back" type="button" data-area-back aria-label="Back to the areas">' + BACK + '</button><h2 class="settingsTitle">' + esc(r.name) + '</h2></div>' +
-      '<div class="hcAreaInGrid">' + inner + '</div></section>' };
-  };
   const dashWrap = (cls, key, label, titled) => (inner) => '<section class="card tfCard tfDashCard ' + cls + '" data-tf data-k="' + key + '" aria-label="' + label + '">' +
     (titled ? '<div class="activityHeader">' + (key === 'favs' ? '<button class="activityTitle tfTitleBtn" type="button" data-more="favourites" aria-label="Favourites. More info">' + label + '</button>' : '<div class="activityTitle">' + label + '</div>') + '</div>' : '') + '<div class="activityRows">' + inner + '</div></section>';
   function dashboard(out, sums) {
     out.dash = true;
-    const inArea = overview && NAV && areaRooms.find((r) => r.id === homeArea), scope = NAV === 'b' && inArea;
-    if (!inArea) homeArea = null;
     out.push({ key: 'dash:title', html: '<h1 class="settingsTitle tfDashTitle" data-tf data-k="dash:title">' + ((overview ? welcomeOn() : dashPrefs().welcome) ? '<span class="tfGreeting">' + esc(greeting()) + '</span>' : '') + esc(getHass()?.config?.location_name || 'Home') + '</h1>' });
-    // B, an area: its own summaries, what its area card knows (each opens what it stands for)
-    if (scope) {
-      const keys = roomKeys(scope), main = mainOf(scope), h = main && headline(main);
-      // its main first, as its card leads with it (the Kitchen's leak sensor, "Dry"), where it isn't one already
-      if (h && !keys.some((k) => keyId(k) === main || groupIds(scope, k.key).includes(main))) keys.unshift({ key: 'main', id: main, kind: 'reading', icon: areaGlyph(main), label: inRoom(scope, main), value: h.text + (h.unit ? ' ' + h.unit : '') });
-      sums = keys.map((k) => ({ scoped: true, r: scope, k }));
-    }
     // the summaries: a row of their own, the bar only as wide as its tiles
-    if (sums.length) out.push({ key: 'sums', wrap: (inner) => '<div class="tfDashBarRow" data-tf data-k="sums">' + dashWrap('tfDash-bar', 'sums-bar', 'Summaries', false)(inner).replace(' data-tf', '') + '</div>', tiles: sums.map((s) => (s.scoped ? { key: 'sum:' + s.k.key, html: scopedSum(s.r, s.k) } : { key: 'sum:' + s.key, html: summaryRow(s) })) });
+    if (sums.length) out.push({ key: 'sums', wrap: (inner) => '<div class="tfDashBarRow" data-tf data-k="sums">' + dashWrap('tfDash-bar', 'sums-bar', 'Summaries', false)(inner).replace(' data-tf', '') + '</div>', tiles: sums.map((s) => ({ key: 'sum:' + s.key, html: summaryRow(s) })) });
     if (!overview && areasShown().length) out.push({ key: 'areas', html: areasHtml(0) });
     // what you've starred always shows, from any room; only the suggestions that fill the card keep to the dashboard's rooms
-    // B, an area: its devices, the ones you've starred first
-    const favs = scope ? [...new Set([...scope.actions, ...scope.plugs, ...(scope.locks || [])])].filter((id) => states[id]).sort((a, b) => Number(starred().includes(b)) - Number(starred().includes(a))) : dashFavourites();
-    if (favs.length) out.push({ key: 'favs', wrap: dashWrap('tfDash-favs', 'favs', 'Favourites', true), tiles: favs.map((id) => ({ key: 'fav:' + id, html: deviceRow(id, { area: !scope }) })) });
+    const favs = dashFavourites();
+    if (favs.length) out.push({ key: 'favs', wrap: dashWrap('tfDash-favs', 'favs', 'Favourites', true), tiles: favs.map((id) => ({ key: 'fav:' + id, html: deviceRow(id, { area: true }) })) });
     if (overview) {
-      // an area open inside Home: its header (back to the areas) and what its page has, in place of the rest
-      if (inArea) { out.push(areaInHome(inArea)); return out; }
       // Energy today, as on Dashboards (Matt, 12 Nov: "add energy stuff"), once switched on in Edit Home page (off to start
       // with: "by default do not show the energy")
       if (prefs.home?.energy) { out.push({ key: 'dash:energy', html: energyGlance() }); loadEnergy(); }
@@ -1933,7 +1889,7 @@ export function mountTestFocus(root, { config, getHass }) {
   // what's on the board: each card's key, its element, its width in pegs ('full' the whole width) and whether it's a tile
   function boardItems() {
     const q = (sel) => grid.querySelector(sel);
-    return [['title', q('.tfDashTitle'), 'full'], ['areain', q('.hcAreaIn'), 'full'], ['sums', q('.tfDashBarRow'), 'full'], ['wx', dashBoxes.wx, 2], ['areas', q('.tfAreas'), 'areas'],
+    return [['title', q('.tfDashTitle'), 'full'], ['sums', q('.tfDashBarRow'), 'full'], ['wx', dashBoxes.wx, 2], ['areas', q('.tfAreas'), 'areas'],
       ['favs', q('.tfDash-favs'), 2], ['sched', q('.tfDash-sched'), 2], ['act', q('.tfDash-act'), 2], ['energy', q('.tfDash-energy'), 2], ['avg', dashBoxes.avg, 2],
       ...NEW_CARDS.map((k) => [k, dashBoxes[k], WIDGET_COLS[k] || 1]),
       ...[...grid.querySelectorAll('.tfDashTiles > [data-k]')].map((el) => [el.dataset.k, el, 1, true])]
@@ -2368,16 +2324,6 @@ export function mountTestFocus(root, { config, getHass }) {
     // in a floor's box its name starts where its areas' icons do (Matt, 12 Nov), the cards' own padding in
     const cardPad = (f) => parseFloat(getComputedStyle(f.cards[0].el).paddingLeft) || 0;
     const place = (f, g, x0, y0, indent = 0) => { headAt(f, x0 + indent, y0, (g.w ?? W) - indent); g.places.forEach((p) => put(p.it, { x: x0 + p.x, y: y0 + p.y, w: p.w, h: p.h })); };
-    // an area open inside Home: where the areas were, as wide as their part and as tall as it needs
-    const navA = shown.find((it) => it.key === 'areain');
-    if (navA) {
-      navA.el.classList.add('tfBoardItem');
-      navA.el.dataset.rows = 5; navA.el.dataset.cols = 2; navA.el.toggleAttribute('data-narrow', false);
-      Object.assign(navA.el.style, { width: aW + 'px', height: '' });
-      const h = navA.el.offsetHeight;
-      put(navA, { x: aX, y: top, w: aW, h });
-      top += h + gap;
-    }
     if (floors.length && tops.length && !side) top += HOME.floorTop;
     if (columns) {
       // a column per floor, as wide as a card, side by side; more floors than fit go on under the tallest
@@ -2446,7 +2392,7 @@ export function mountTestFocus(root, { config, getHass }) {
     oldBoxes.forEach((el) => el.remove());
     if (!homeDrag?.on) homeLand(null);
     grid.style.height = Math.max(0, top - gap) + 'px';
-    readingOrder([...heads.map((it) => it.el), ...tops.map((it) => it.el), ...(navA ? [navA.el] : []), ...floorHeads, ...floors.flatMap((f) => f.cards.map((it) => it.el))]);
+    readingOrder([...shown.filter((it) => HEAD.includes(it.key)).map((it) => it.el), ...tops.map((it) => it.el), ...floorHeads, ...floors.flatMap((f) => f.cards.map((it) => it.el))]);
     editTools(false);
     // while Edit Home page is open the cards rest: a tap doesn't work their controls or open them
     items.forEach((it) => [...it.el.children].forEach((c) => c.toggleAttribute('inert', homeEditing)));
@@ -3541,16 +3487,6 @@ export function mountTestFocus(root, { config, getHass }) {
   let leftAt = 0, leftTop = null; // how far the house was scrolled when a page opened, and where its opener was on screen
   // the card a page opened from: the weather card or the areas
   const openerOf = (key) => (key === 'weather' ? dashBoxes.wx : (key.startsWith('room:') && grid.querySelector('.tfRoomTile[data-k="' + CSS.escape(key) + '"]')) || grid.querySelector('.tfAreas'));
-  // an area inside Home (?nav=a or b), or back to the area cards: drawn again, its header brought into view where it's
-  // out of sight (a phone, where it's under Favourites), and the focus on its back arrow, or on the card it came from
-  function openHomeArea(id) {
-    const from = homeArea;
-    homeArea = id;
-    render();
-    const head = grid.querySelector('.hcAreaInHead');
-    if (head) { const r = head.getBoundingClientRect(); if (r.top < 0 || r.top > innerHeight - 120) scroller().scrollTop += r.top - 80; head.querySelector('[data-area-back]')?.focus({ preventScroll: true }); }
-    else if (from) grid.querySelector('.tfRoomTile[data-k="room:' + CSS.escape(from) + '"] .tfName')?.focus({ preventScroll: false });
-  }
   function openArea(key) {
     if (!areaPage) { leftAt = scroller().scrollTop; leftTop = openerOf(key)?.getBoundingClientRect().top ?? null; }
     areaPage = key;
@@ -4707,8 +4643,8 @@ export function mountTestFocus(root, { config, getHass }) {
       else if (t.hasAttribute('data-more-close')) closeMore();
       else if (t.dataset.morePage) pickTab(t.hasAttribute('data-more-toggle') && (more?.page || 0) === Number(t.dataset.morePage) ? 0 : Number(t.dataset.morePage), t.dataset.moreMode ?? null, true); // the (i) again: back
       else if (t.dataset.path) go(t.dataset.path);
-      else if (t.dataset.go) (NAV && overview && !areaPage ? openHomeArea(t.dataset.go) : openArea('room:' + t.dataset.go));
-      else if (t.hasAttribute('data-area-back')) (homeArea ? openHomeArea(null) : closeArea());
+      else if (t.dataset.go) openArea('room:' + t.dataset.go);
+      else if (t.hasAttribute('data-area-back')) closeArea();
       else if (t.classList.contains('tfAreaPanel') && !t.classList.contains('active')) pickArea(t);
     });
     el.addEventListener('keydown', (ev) => {
