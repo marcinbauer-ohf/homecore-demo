@@ -6,6 +6,7 @@ import displayCss from "./display.css?inline";
 import bentoCss from "./weather-bento.css?inline";
 import demoCss from "./demo.css?inline";
 import motionCss from "./motion.css?inline";
+import ambientCss from "./ambient.css?inline"; // the Ambient lab's look (Matt, 20 Nov)
 import template from "./template.html?raw";
 import { mountMoveAssistant } from "./app.js";
 import { mountTestFocus } from "./test-focus.js";
@@ -58,7 +59,7 @@ class HomeCoreApp extends HTMLElement {
   async _init() {
     loadFonts();
     const root = this.shadowRoot || this.attachShadow({ mode: "open" });
-    root.innerHTML = `<style>${css}${displayCss}${bentoCss}${demoCss}${motionCss}</style>${template}`;
+    root.innerHTML = `<style>${css}${displayCss}${bentoCss}${demoCss}${motionCss}${ambientCss}</style>${template}`;
     const app = root.getElementById("app");
     app.style.opacity = "0";
 
