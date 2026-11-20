@@ -1266,15 +1266,17 @@ export function mountTestFocus(root, { config, getHass }) {
     const big = h ? h.text + (h.unit ? ' ' + h.unit : '') : '';
     const opens = (k) => { const ids = groupIds(r, k.key); return ids.length === 1 ? ids[0] : 'group:' + r.id + ':' + k.key; };
     const controls = keys.filter((k) => k.kind === 'control').slice(0, 4), lit = (k) => (k.on && k.light ? ' data-light style="' + k.light + '"' : '');
-    /* the big rule (Matt, 18 Nov): an icon on its own opens what it stands for (the room's lights panel, the thermostat),
-       drawn as before; an icon with its name beside it, a tile, does as a tile's does and turns it on
-       and off */
+    /* the rule (Matt, 20 Nov: "If it is just an icon, it opens the panel or more info that controls that. if it is a tile
+       with name and subtitle etc then it opens the more info and the icon in the tile becomes the binary toggle like it is
+       (if defined by the device/entity)"): an icon on its own opens what it stands for (the room's lights panel, the
+       thermostat); a tile (icon, name, state) opens it from anywhere on it, and its icon turns it on and off where it can
+       be, else opens it too. The room's own head is as it was: its icon and name open the room's page */
     const opener = (k) => '<button class="tfIcon' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) + ' data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '">' + k.icon + '</button>';
     const toggle = (k) => '<button class="tfIcon' + (k.on ? ' on' : '') + '" type="button" data-tone="' + k.tone + '"' + lit(k) + ' data-acts="' + acts(k.acts) + '" aria-label="' + esc(k.aria) + '" aria-pressed="' + k.on + '">' + k.icon + '</button>';
     const devices = controls.map(opener);
     // wide, the same devices as heads (icon, name, state), as the open room shows them (Matt, 6 Nov; Figma 954:6297): the
-    // name opens its control
-    const heads = controls.map((k) => '<div class="tfRoomDev' + (k.on ? ' on' : '') + '">' + toggle(k) +
+    // tile opens its control, its icon the switch
+    const heads = controls.map((k) => '<div class="tfRoomDev' + (k.on ? ' on' : '') + '" data-more="' + esc(opens(k)) + '">' + (k.acts?.length ? toggle(k) : '<span class="tfIcon' + (k.on ? ' on' : '') + '" data-tone="' + k.tone + '"' + lit(k) + ' aria-hidden="true">' + k.icon + '</span>') +
       '<button class="tfName tfRoomDevName" type="button" data-more="' + esc(opens(k)) + '" aria-label="' + esc(r.name + ' ' + k.label.toLowerCase() + ', ' + k.value + '. Open') + '"><span class="activityRowName">' + esc(k.label) + '</span><span class="activityRowMeta">' + esc(k.value) + '</span></button></div>');
     // the room's icon opens the room's page (Matt, 18 Nov), bare as the summaries' are; it used to turn off everything in
     // the room, which "just shouldn't happen"

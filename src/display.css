@@ -696,7 +696,7 @@ button.tfAreaIcon{cursor:pointer}
    clear until it's hovered; the tiles touch, 8 in from the card's sides and foot so their icons line up with the
    room's at 18, their corner the card's 28 less those 8 (they nest) */
 .tfRoomHeads{display:none;gap:0;margin:auto -10px -10px}
-.tfRoomDev{position:relative;isolation:isolate;display:flex;align-items:center;gap:12px;min-width:0;height:60px;padding:10px;box-sizing:border-box;border-radius:20px}
+.tfRoomDev{position:relative;isolation:isolate;display:flex;align-items:center;gap:12px;min-width:0;height:60px;padding:10px;box-sizing:border-box;border-radius:20px;cursor:pointer} /* the whole tile opens its control (Matt, 20 Nov) */
 .tfRoomDev::before{content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;pointer-events:none;transition:background .15s ease,box-shadow .15s ease}
 /* a wide Small card: its head, 10, then its one row of tiles */
 #app.tfBoard .tfRoomTile:not([data-cols="1"])[data-rows="2"]{gap:10px}
