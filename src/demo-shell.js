@@ -368,7 +368,5 @@ export function mountDemoShell(root, { getHass, homecore }) {
   mountIntro(root, app); // the load-in, once
   // its tweaker, on the dev server only (never in the built site): delete this line and intro-tweaker.js to drop it
   if (import.meta.env.DEV) import('./intro-tweaker.js').then((m) => m.mountIntroTweaker(root, app));
-  // the Ambient lab on the Weather page (Matt, 20 Nov), on the dev server only too: delete this line, ambient-lab.js and ambient.css to drop it
-  if (import.meta.env.DEV) import('./ambient-lab.js').then((m) => m.mountAmbientLab(root, app));
   return { go };
 }
