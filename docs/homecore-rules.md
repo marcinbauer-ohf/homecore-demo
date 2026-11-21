@@ -115,7 +115,7 @@ Control fill is `--tile`, with the hairline. Segments and the stepper's buttons 
 
 ## 8. Rows
 
-A row is a head laid flat: icon button 40, name, then the value on the right. Minimum height 60, padding 10, gap 10, corner 24. Rows live inside cards (favourites, readings, activity) and in lists. Tables have no card: they sit on the page, 60 per row, 20 in, a 0.4 hairline between rows.
+A row is a head laid flat: icon button 40, name, then the value on the right. Minimum height 60, padding 10, gap 10, corner 24. Rows live inside cards (favourites, readings, activity) and in lists. In a Wide card rows run two per line, so four favourites make an M card and six summaries a card of three lines. On a phone the summaries and favourites are each one full-width card of rows, two per line, no title. Tables have no card: they sit on the page, 60 per row, 20 in, a 0.4 hairline between rows.
 
 ## 9. Popups
 
