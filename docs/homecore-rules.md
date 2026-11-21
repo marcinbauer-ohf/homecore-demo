@@ -69,7 +69,12 @@ Rules for sizes:
 | Subtitle | Geist 400, 16 / 20 |
 | Gap below the head | 14 |
 
-The icon is the button on a device tile. There is never a separate switch on a tile. Text that does not fit is cut with "…" and shows a tooltip. Align text to its letters, never to the icon box.
+The icon's fill says what a tap does:
+
+- **Full fill** (grey, or the light's colour when on): the icon is an on/off button. Only on devices that can be switched, unless that device has it turned off.
+- **Faint fill** (the text colour at 9%): the icon opens something: more-info, a popup or a page, depending on the device, summary or group. Summaries and the device icons inside an area tile use this.
+
+The two looks never swap jobs. There is never a separate switch on a tile. Text that does not fit is cut with "…" and shows a tooltip. Align text to its letters, never to the icon box.
 
 ## 5. Tile
 
