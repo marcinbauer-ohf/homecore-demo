@@ -3,7 +3,7 @@
    Cards on Home: 10 in from the edge (14 above a header), a 28 header with no icon, tiles that touch
    and have no fill until you hover them, 12% ink hairlines. Values not in the shape tokens are written here.
    ========================================================= */
-#app{--hc-on-accent:#f4f3f3;--hc-open-edge:rgba(255,255,255,.1);--hc-hair:inset 0 0 0 .2px var(--line),inset 0 -.2px 0 var(--line);--hc-hair-all:inset 0 0 0 .4px var(--line)}
+#app{--hc-icon-soft:color-mix(in srgb,var(--text) 9%,transparent);--hc-on-accent:#f4f3f3;--hc-open-edge:rgba(255,255,255,.1);--hc-hair:inset 0 0 0 .2px var(--line),inset 0 -.2px 0 var(--line);--hc-hair-all:inset 0 0 0 .4px var(--line)}
 #app.light{--hc-open-edge:#e3e3e3}
 
 /* cards: hairline 0.4 all round on cards of tiles; 0.2 with 0.4 along the bottom on the others */
@@ -702,7 +702,7 @@ button.tfAreaIcon{cursor:pointer}
 #app.tfBoard .tfRoomTile:not([data-cols="1"])[data-rows="2"]{gap:10px}
 @media (hover:hover){.tfRoomDev:hover::before{background:var(--tile);box-shadow:inset 0 0 0 .2px var(--line),inset 0 -.4px 0 var(--line)}}
 .tfRoomDevName{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
-.tfRoomDev .tfIcon{border:0;padding:0;background:var(--hc-icon);color:var(--hc-icon-ink);cursor:pointer}
+.tfRoomDev .tfIcon{border:0;padding:0;background:var(--hc-icon-soft);color:var(--text);cursor:pointer} /* faint fill: this icon opens the device, it does not toggle it (Matt, 21 Nov: a full fill is a switch, a faint fill opens something) */
 .tfRoomDev .tfIcon.on[data-light]{background:var(--light-soft);color:var(--light-ink)}
 /* the room's icon opens the room's page and is drawn as the summaries' are, no chip (Matt, 18 Nov); a device's icon keeps
    its chip */
