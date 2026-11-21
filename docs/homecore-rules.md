@@ -175,6 +175,7 @@ Geist only.
 | `--tile` | controls and inputs inside a tile or card |
 | `--line` | the 0.4 hairline |
 | `--text`, `--muted` | words |
+| `--title` | titles, names and big readings: the text colour in dark mode, a greyer #55504a in light mode, so headings sit back from the body text |
 | `--hc-icon`, `--hc-icon-ink` | icon buttons: neutral grey, glyph in the text colour |
 | `--primary` #03A9F4 | the one accent |
 
