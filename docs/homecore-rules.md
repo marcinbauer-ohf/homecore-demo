@@ -187,3 +187,77 @@ Icon buttons are grey everywhere. A light that is on shows its own colour on its
 - No separate switch on a tile.
 - No second rule for phones: the same elements at the same sizes, two columns.
 - No invented elements: build only what is asked for.
+
+## 14. Data tiles
+
+A data tile is a Tile that shows a reading instead of controls. Air quality, Pollen, UV, Moon, Humidity, Pressure, Wind and Visibility are all this one tile with different words.
+
+| Part | Value |
+|---|---|
+| Zone (the reading) | Geist 500 at 44, unit Light 18 muted on the baseline, at the bottom of the Space |
+| Callout | Geist 14 / 20; advice in the text colour, or a muted name with its value on the right; up to three, 4 apart, 8 under the Zone, ending 18 from the bottom |
+| XS | the head alone |
+| S | head and Zone |
+| M, XL | head, Zone and callouts |
+
+## 15. Weather
+
+Weather uses the same grammar at a different scale: condition imagery replaces the chip.
+
+| Kind | Value |
+|---|---|
+| Weather icon | condition on a coloured square; Small 60 corner 20, Large 90 corner 24 |
+| Wide (520, XL) | 20 in; Large icon, 26 at 64 with the unit at 24, the place 14; Sunny / H / L in an inset tile (corner 24); six forecast days that stretch to fill the row (tile fill, corner 24, 16 above and below, day 14, icon 60, high 16, low 16 muted) |
+| Compact (336) | three 60 rows: Now, Today, Tomorrow |
+| Halves (355) | 10 in; current conditions above three pairs of forecast rows |
+
+## 16. Energy and graphs
+
+| Part | Value |
+|---|---|
+| Bars by the hour | "Most" caption 11, three hairline guides, one bar per hour 14 wide corner 2 at a 20 pitch, text colour with the current hour in the accent, hour labels 11 muted |
+| Energy today (Wide) | XS: sources in one 60 row; S: title + sources; M–XL: title, graph filling the space, sources at the bottom; the picked source takes the tile fill |
+| Open tile (300 × 242) | a reading tile opened to its 24 hours: tile fill inset 10, head with a back glyph, drawing with three guides and hour labels 10 |
+
+## 17. Area accordion
+
+The Areas card is an accordion the width of the board: one area open, the rest folded, 16 apart, all the same height.
+
+| Part | Value |
+|---|---|
+| Open | 556 wide, corner 28, 18 in; name 18 Medium; reading 51 with its line 16 muted at the top of the Space; device rows (252, 60) two per line at the bottom |
+| Folded | 128 wide, corner 24, 18 above and 10 at the sides; icon, name 16 SemiBold centred, main 32 ExtraLight, devices that are on as icon buttons two to a row, 20 apart, at the bottom |
+
+## 18. More info, by kind
+
+One popup per device kind (440 × 604, phone 358). Head row, Space, Controls, tabs pill.
+
+| Kind | Space | Controls |
+|---|---|---|
+| Light | two vertical bars 134 × 319 corner 24: brightness (level from the bottom), warmth (gradient, a 30 × 4 handle) | tabs: palette, DAC, sliders; info on the right |
+| Climate, humidifier, water heater | tile-filled box 224: reading 64 with unit 24, facts 14 (muted name, value) | stepper, Range (two steppers), Mode segments |
+| Fan, lock, switch, valve | big switch 224 corner 89.6, glyph 190 | track, segments |
+| Alarm | tile-filled keypad: Code field 46, keys 46 corner 12 card fill, 8 apart | Off / Home / Away / Night / Vacation |
+| Cover | drawing of the cover | blocks 25 / 50 / 75 / 100 (accent when reached), tilt track, Open / Stop / Close |
+| Vacuum | reading box with fan speed | Start / Dock / Locate, rooms as chips |
+| Media | artwork 240 corner 28 | playback 46 |
+| Info page | last 24 hours strip, facts 40 tall with a hairline above each | tabs with info chosen |
+| Summary | 1040 on the page colour, 40 in; title 24, headline 28, groups 18, reading tiles 306 × 76 three per row 20 apart | |
+| Tabs pill | 38 tall, 3 in, tabs 48 × 32 corner 16, chosen bright | |
+
+## 19. Edit pages
+
+| Part | Value |
+|---|---|
+| Tray row | 60; grip 20, Head, show and remove 20 (favourite) or a switch (summary); hidden card = tile-filled chip with a grip |
+| Section head | Head with one line of help and a chevron that turns |
+| Setting row | name, Info button 28 (faint), switch on the right |
+| Edit dashboard | title + Done, tabs Cards / Home page / Phone, sections at 18: hidden cards, Tiles (Add tile), Areas (Add area), Phone (Show the phone), Favourites, Show suggestions |
+| Edit Home page | folding sections Personalize (welcome, favourites, suggestions) and Summaries (rows with switches) |
+| Card menu | 271 wide, 6 in, corner 24; Height XS–XL and Width options as 12 SemiBold pills 3 in; Edit card, Move ×4 (impossible at 40%), Hide; items 40 |
+| Mini phone | 324 wide corner 44, 12 in; screen 300 corner 34 on the page colour, blocks at 0.8 |
+| Info popover | 280 wide, 16 in, corner 24, title + explanation + Learn more |
+
+## 20. Action spaces in Figma
+
+Every Space slot in the Figma file carries a faint accent tint (6%) so an empty or misplaced space is visible. It is a Figma aid only; the demo draws no tint.
