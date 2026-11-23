@@ -13,10 +13,11 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const rect = (x, y, w, h, fill, opacity) => '<rect x="' + n2(x) + '" y="' + n2(y) + '" width="' + n2(w) + '" height="' + n2(h) + '" fill="' + fill + '"' + (opacity != null ? ' opacity="' + opacity + '"' : '') + '/>';
 const path = (pts) => pts.map((p, k) => (k ? 'L' : 'M') + n2(p[0]) + ' ' + n2(p[1])).join('');
 
-// which drawing a cover gets: curtains, a roller blind (shade), or slats (blind, or anything that tilts)
+// which drawing a cover gets: curtains, a garage door, a roller blind (shade), or slats (blind, or anything that tilts)
 export function coverKind(st) {
   const a = st?.attributes || {};
   if (a.device_class === 'curtain') return 'curtain';
+  if (a.device_class === 'garage') return 'garage';
   if (a.device_class === 'blind' || a.current_tilt_position != null) return 'venetian';
   return 'blind';
 }
@@ -117,7 +118,25 @@ function venetian(of, barOf, tilt, flat) {
   return { body, rails: [{ x: G0, y: G0 + GS * (1 - barOf) - 8, w: GS, h: 8 }], head: 8.8 };
 }
 
-const part = (kind, of, barOf, tilt, vel, ph, flat) => (kind === 'curtain' ? curtain(of, barOf, vel, ph, flat) : kind === 'venetian' ? venetian(of, barOf, tilt, flat) : blind(of, barOf, flat));
+// Garage door (the covers prototype, "Home Assistant Covers refinement", Matt 23 Nov: "use the garage door cover design
+// we did"): a sectional door of eight panels that ride up the track as one chain, each darkening as it goes over the
+// header and out of sight
+function garage(of, barOf, flat) {
+  const n = 8, ph = GS / n, travel = GS * of;
+  let body = '';
+  if (travel < GS - 0.5) for (let i = 0; i < n; i++) {
+    const top = G0 + i * ph - travel, bottom = top + ph;
+    if (bottom <= G0 + 0.01) continue;
+    const y = Math.max(G0, top);
+    body += rect(G0, y, GS, bottom - y, COVER);
+    if (flat) continue;
+    if (top < G0) body += rect(G0, y, GS, bottom - y, '#000', n2(0.12 + 0.26 * ((G0 - top) / ph)));
+    if (top > G0 + 0.5) body += rect(G0, top - 0.8, GS, 1.6, SEAM);
+  }
+  return { body, rails: [{ x: G0, y: G0 + GS * (1 - barOf) - 6, w: GS, h: 9 }], head: 10.4 };
+}
+
+const part = (kind, of, barOf, tilt, vel, ph, flat) => (kind === 'curtain' ? curtain(of, barOf, vel, ph, flat) : kind === 'garage' ? garage(of, barOf, flat) : kind === 'venetian' ? venetian(of, barOf, tilt, flat) : blind(of, barOf, flat));
 
 // a grip on each rail: a line across the glass and a knob with arrows the way it moves
 function grips(id, rails) {

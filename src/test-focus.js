@@ -56,8 +56,8 @@ const COVER_BUTTONS = {
   stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2.5" fill="currentColor"/></svg>',
   close: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l5 5-5 5"/><path d="M21 7l-5 5 5 5"/></svg>',
 };
-const COVER_ICON = { curtain: ['mdi:curtains', 'mdi:curtains-closed'], blind: ['mdi:roller-shade', 'mdi:roller-shade-closed'], venetian: ['mdi:blinds-horizontal', 'mdi:blinds-horizontal-closed'] };
-const COVER_NOUN = { curtain: 'curtains', blind: 'blind', venetian: 'blinds' };
+const COVER_ICON = { curtain: ['mdi:curtains', 'mdi:curtains-closed'], blind: ['mdi:roller-shade', 'mdi:roller-shade-closed'], venetian: ['mdi:blinds-horizontal', 'mdi:blinds-horizontal-closed'], garage: ['mdi:garage-open', 'mdi:garage'] };
+const COVER_NOUN = { curtain: 'curtains', blind: 'blind', venetian: 'blinds', garage: 'garage door' };
 // the home view's summaries (Home Assistant's home-summaries.ts, with its English names), in its default order. Energy
 // shows what the house uses now: this page can't read the energy dashboard's day
 const SUMMARIES = {

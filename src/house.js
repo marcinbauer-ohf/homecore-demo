@@ -71,7 +71,7 @@ export function createHouse({ onChange }) {
     // a room's own lock (the storage door), and what's going on in a room (the office: someone's busy in there)
     if (m.lock) add('lock.' + PREFIX + a + '_door', a, 'locked', { friendly_name: m.lock, changed_by: 'Wembely' });
     if (m.status) add('sensor.' + PREFIX + a + '_status', a, m.status, { friendly_name: 'Status', icon: 'mdi:account-clock', options: ['Free', 'Busy', 'Away'], device_class: 'enum' });
-    if (m.garage) add('cover.' + PREFIX + a + '_' + slug(m.garage), a, 'closed', { friendly_name: m.garage, device_class: 'garage', supported_features: 1 | 2 });
+    if (m.garage) add('cover.' + PREFIX + a + '_' + slug(m.garage), a, 'closed', { friendly_name: m.garage, device_class: 'garage', current_position: 0, supported_features: 1 | 2 | 4 | 8 });
     if (m.cover) {
       const [name, cls, position, tilt] = m.cover;
       add('cover.' + PREFIX + a + '_' + slug(name), a, position ? 'open' : 'closed', { friendly_name: name, device_class: cls, current_position: position, ...(tilt != null ? { current_tilt_position: tilt } : {}) });
@@ -194,7 +194,7 @@ export function createHouse({ onChange }) {
     if (domain === 'cover') {
       const to = service === 'open_cover' ? 100 : service === 'close_cover' ? 0 : service === 'set_cover_position' ? data.position : service === 'toggle' ? (a.current_position > 0 ? 0 : 100) : null;
       if (service === 'stop_cover') { delete target[id]; delete tiltTarget[id]; set(a.current_position === 0 ? 'closed' : 'open'); }
-      if (to != null && a.current_position == null) set(to > 0 ? 'open' : 'closed'); // no position (a garage door): open or closed outright
+      if (to != null && a.current_position == null) set(to > 0 ? 'open' : 'closed'); // no position: open or closed outright
       else if (to != null && to !== a.current_position) { target[id] = to; set(to > a.current_position ? 'opening' : 'closing'); }
       const tilt = service === 'open_cover_tilt' ? 100 : service === 'close_cover_tilt' ? 0 : service === 'set_cover_tilt_position' ? data.tilt_position : null;
       if (service === 'stop_cover_tilt') delete tiltTarget[id];
