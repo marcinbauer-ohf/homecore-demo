@@ -126,10 +126,10 @@ A row is a head laid flat: icon button 40, name, then the value on the right. Mi
 
 | Rule | Value |
 |---|---|
-| Popup | 440 wide, centred, padding 20, gap 14, corner 34 |
+| Popup | 440 wide, centred, padding 20, gap 14, corner 34 (a device's more info: 480 × 660) |
 | Sheet | 640 wide, from the bottom |
 | On a phone | always a bottom sheet, corner 34 top only |
-| Head row | 40 tall: head on the left, close 34 on the right |
+| Head row | 40 tall: head on the left, close 34 on the right. Stays in place when what's under it scrolls; the content passes beneath with a 24 fade under the head (only once something is scrolled) |
 | Tabs | 38 tall pill |
 | Details side panel | 300 wide, 12 from the popup, same height; slides over the popup under 800 wide |
 | Summary popup | min(1040, screen − 32) wide, padding 40 (20 / 16 on phones), 28 between groups |
@@ -231,7 +231,7 @@ The Areas card is an accordion the width of the board: one area open, the rest f
 
 ## 18. More info, by kind
 
-One popup per device kind (440 × 604, phone 358). Head row, Space, Controls, tabs pill.
+One popup per device kind (480 × 660 on a desktop; on a phone a sheet 85% of the screen tall, as tall as a summary's, 16 from the sides and the bottom). The Space takes what the extra height gives. Head row, Space, Controls, tabs pill.
 
 | Kind | Space | Controls |
 |---|---|---|
