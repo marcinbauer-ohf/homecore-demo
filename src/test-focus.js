@@ -2277,13 +2277,19 @@ export function mountTestFocus(root, { config, getHass }) {
     const columns = lay === 'columns' && byFloor && !phone;
     const BOX = 12; // a floor's box: 12 around its name and areas, its corners the cards' and 12 (they nest)
     const headH = (f) => (f.name ? HOME.floorHead + HOME.floorGap : 0);
+    /* Mixed sizes by rank (Matt, 23 Nov: "put the highest ranked (in the order set...) areas larger, and the lower ones
+       smaller"): the first three in the order set, across the whole home, are large (two wide, as the Balcony was); the rest
+       are the half size, and never grow to fill a gap */
+    const RANKED = 3, rankIds = overviewRooms().map((r) => 'room:' + r.id);
+    const ranked = (it) => mixed && rankIds.indexOf(it.key) > -1 && rankIds.indexOf(it.key) < RANKED;
+    const bigs = (f) => f.cards.filter(ranked).length;
     // a group's cards in its own columns (c), each in the first free cell from the top left; a big one two by two (on a
     // phone the whole width). Gives each card's place inside the group, and the group's height
     const pack = (f, c, w) => {
       const taken = new Set(), at = [];
-      f.cards.forEach((it, i) => {
-        // the first is the biggest but only two wide, as tall as the others (Matt, 18 Nov: "why is the living room SO big?")
-        const big = mixed && i === 0 && c >= 2 && f.cards.length > 1, sc = big ? 2 : 1, sr = 1;
+      f.cards.forEach((it) => {
+        // a large one is two wide, as tall as the others (Matt, 18 Nov: "why is the living room SO big?")
+        const big = ranked(it) && c >= 2, sc = big ? 2 : 1, sr = 1;
         it.el.classList.add('tfBoardItem');
         it.el.dataset.cols = sc; it.el.toggleAttribute('data-narrow', false);
         for (let r = 0; ; r++) {
@@ -2294,7 +2300,7 @@ export function mountTestFocus(root, { config, getHass }) {
       const rowsN = Math.max(0, ...at.map((p) => p.r + p.sr));
       // in Bento a card with nothing under it grows down to the group's foot, so the box has no hole (not on a phone,
       // where each row is as tall as it needs)
-      if (bento && !phone) at.forEach((p) => { while (p.r + p.sr < rowsN && !taken.has((p.r + p.sr) + ',' + p.c) && p.sc === 1) { taken.add((p.r + p.sr) + ',' + p.c); p.sr++; } });
+      if (bento && !phone && !mixed) at.forEach((p) => { while (p.r + p.sr < rowsN && !taken.has((p.r + p.sr) + ',' + p.c) && p.sc === 1) { taken.add((p.r + p.sr) + ',' + p.c); p.sr++; } });
       // its rows as the dashboard counts them (a big one, or one grown down in Bento, more), so it shows what the dashboard's
       // area card shows at that size
       at.forEach((p) => { p.it.el.dataset.rows = Math.min(5, p.sr * dims.rows); Object.assign(p.it.el.style, { width: (p.sc * w + (p.sc - 1) * gap) + 'px', height: (p.sr * ch + (p.sr - 1) * gap) + 'px' }); });
@@ -2350,8 +2356,8 @@ export function mountTestFocus(root, { config, getHass }) {
         sky = out.sort((a, b) => a.x0 - b.x0);
       };
       floors.forEach((f) => {
-        const cells = f.cards.length + (mixed && f.cards.length > 1 ? 3 : 0);
-        let c = phone ? 2 : Math.min(n, Math.max(mixed && f.cards.length > 1 ? 2 : 1, cells <= 3 ? cells : Math.ceil(cells / 2)));
+        const cells = f.cards.length + bigs(f);
+        let c = phone ? 2 : Math.min(n, Math.max(bigs(f) ? 2 : 1, cells <= 3 ? cells : Math.ceil(cells / 2)));
         while (!phone && c > 1 && c * cw + (c - 1) * gap + 2 * BOX > aW) c--; // a phone keeps two, a little narrower
         // its box as many cards wide as suits it, or fewer when that lets it sit higher, beside another box; a card a column
         // wide, unless even one in its box can't be (a phone, or one column beside the stack)
@@ -2376,8 +2382,8 @@ export function mountTestFocus(root, { config, getHass }) {
       const fitCols = (f) => {
         if (!prefs.home?.fitTogether || phone) return n;
         const besideH = side ? colB - gap - top : null;
-        const shape = (c) => { const cells = f.cards.length + (mixed && f.cards.length > 1 && c >= 2 ? 3 : 0), rows = Math.ceil(cells / c); return { holes: rows * c - cells, rows, h: headH(f) + rows * ch + (rows - 1) * gap, w: c * cw + (c - 1) * gap }; };
-        const neat = (x) => x.holes === 0 || (bento && x.holes === 1 && x.rows > 1);
+        const shape = (c) => { const cells = f.cards.length + (c >= 2 ? bigs(f) : 0), rows = Math.ceil(cells / c); return { holes: rows * c - cells, rows, h: headH(f) + rows * ch + (rows - 1) * gap, w: c * cw + (c - 1) * gap }; };
+        const neat = (x) => x.holes === 0 || (bento && !mixed && x.holes === 1 && x.rows > 1);
         for (let c = 1; c <= n; c++) { const x = shape(c); if (neat(x) && x.h <= (besideH ?? x.w)) return c; }
         for (let c = 1; c <= n; c++) { const x = shape(c); if (x.h <= (besideH ?? x.w)) return c; }
         return n;
