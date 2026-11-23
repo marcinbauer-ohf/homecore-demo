@@ -1324,9 +1324,12 @@ export function mountTestFocus(root, { config, getHass }) {
   // the dashboard's Favourites: the favourites in their order, less those hidden to the edit tray; then, with Show
   // suggestions on, suggestions from the dashboard's rooms to fill the card
   const suggestOn = () => prefs.suggest ?? !haHome.hide_suggested_entities;
+  // how many suggestions Home shows after the favourites, 1 to 12, 4 until one is picked (Matt, 23 Nov: "Number of
+  // suggested entities")
+  const SUGGEST_MAX = 12, suggestN = () => Math.min(SUGGEST_MAX, Math.max(1, prefs.home?.suggestN ?? 4));
   function dashFavourites() {
     const hidden = new Set(overview ? [] : prefs.favHidden || []), stars = starred().filter((id) => !hidden.has(id));
-    const fill = suggestOn() ? suggestionIds().filter((id) => !hidden.has(id) && dashLight(id)) : [];
+    const fill = suggestOn() ? suggestionIds().filter((id) => !hidden.has(id) && dashLight(id)).slice(0, overview ? suggestN() : undefined) : [];
     // Home's card grows with its favourites, so every one shows there (as Move Assistant v0.85.0); as a strip, ten
     return overview && !favsStrip() ? [...stars, ...fill] : [...stars, ...fill].slice(0, DASH_FAVOURITES);
   }
@@ -2898,7 +2901,10 @@ export function mountTestFocus(root, { config, getHass }) {
         '<div class="tfTrayPick" data-he-pick' + (homePicking ? '' : ' hidden') + '><input class="addInput" type="search" placeholder="Search devices" aria-label="Search devices" autocomplete="off" data-he-search value="' + esc(search) + '">' +
         '<ul class="tfTrayList">' + (homePicking ? pickHtml(search, (id) => PICK_DOMAINS.test(id), new Set(favs), 'data-he-pick-id') : '') + '</ul></div>' +
         '<hr class="hcHeRule">' +
-        '<div class="hcHeLine"><span class="activityRowName">Suggested entities</span>' + infoBtn('suggest') + sw(suggestOn(), 'Suggested entities', 'data-he-suggest') + '</div>',
+        '<div class="hcHeLine"><span class="activityRowName">Suggested entities</span>' + infoBtn('suggest') + sw(suggestOn(), 'Suggested entities', 'data-he-suggest') + '</div>' +
+        (suggestOn() ? '<div class="hcHeLine"><span class="activityRowName">Number of suggested entities</span><div class="tfStep hcHeStep" role="group" aria-label="Number of suggested entities">' +
+          '<button type="button" data-he-suggest-n="-1" aria-label="Fewer suggested entities"' + (suggestN() <= 1 ? ' disabled' : '') + '>' + STEP.down + '</button><output>' + suggestN() + '</output>' +
+          '<button type="button" data-he-suggest-n="1" aria-label="More suggested entities"' + (suggestN() >= SUGGEST_MAX ? ' disabled' : '') + '>' + STEP.up + '</button></div></div>' : ''),
       sums: '<div class="hcHeLine"><span class="activityRowName">Show summaries</span>' + infoBtn('sums') + sw(prefs.home?.sums !== false, 'Show summaries', 'data-he-card="sums"') + '</div>' +
         homeSeg('Width', 'data-he-sums-width', sumsFit() ? 'fit' : 'match', [['match', 'Match the cards'], ['fit', 'Fit the summaries']]) +
         '<hr class="hcHeRule">' +
@@ -2997,6 +3003,7 @@ export function mountTestFocus(root, { config, getHass }) {
     if (t.closest('[data-he-fit]')) { homePrefs({ fitTogether: !prefs.home?.fitTogether }); return; }
     const fl = t.closest('[data-he-flag]'); if (fl) { const key = fl.dataset.heFlag; homePrefs({ [key]: prefs.home?.[key] === false }); return; }
     if (t.closest('[data-he-suggest]')) { homeSave({ suggest: !suggestOn() }); return; }
+    if (t.closest('[data-he-suggest-n]')) { homePrefs({ suggestN: Math.min(SUGGEST_MAX, Math.max(1, suggestN() + +t.closest('[data-he-suggest-n]').dataset.heSuggestN)) }); return; }
     const ha = t.closest('[data-he-area]'); if (ha) { const off = new Set(prefs.home?.areasOff || []), id = ha.dataset.heArea; if (off.has(id)) off.delete(id); else off.add(id); homePrefs({ areasOff: [...off] }); return; }
     const sm = t.closest('[data-he-sum]');
     if (sm) {

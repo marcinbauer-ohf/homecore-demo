@@ -1062,6 +1062,11 @@ button.tfAreaIcon{cursor:pointer}
 .hcHeLine{display:flex;align-items:center;gap:4px;min-height:44px}
 .hcHeLine>.activityRowName{min-width:0}
 .hcHeLine>.switch{margin-left:auto}
+/* Number of suggested entities: the tiles' stepper, smaller, at the line's end (Matt, 23 Nov) */
+.hcHeLine>.hcHeStep{flex:none;margin-left:auto;height:36px;border-radius:var(--r-inner)}
+.hcHeStep button{flex:0 0 36px;width:36px;height:36px;border-radius:var(--r-inner)}
+.hcHeStep button:disabled{opacity:.35;cursor:default}
+.hcHeStep output{flex:0 0 28px;font-size:16px}
 .hcHeLink{display:inline;min-height:0;padding:0;border:0;background:none;font:inherit;color:var(--primary);text-decoration:underline;cursor:pointer}
 .hcHeList{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
 .hcHeRow{display:grid;grid-template-columns:36px var(--chip-size) minmax(0,1fr) auto;align-items:center;gap:10px;min-height:var(--tile-min);padding:0 4px;border-radius:var(--r-tile)}
