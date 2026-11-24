@@ -73,6 +73,9 @@ export function mountLook(root, { toast }) {
     // the look's rules hold on every page, or (Dashboards only) on the house page and area pages; the preview always
     const ON = '#app.hcDemo.hcLook:not(.hcLookOff)', PV = '#app.hcDemo.hcLook .hcLookPreview';
     const both = (sel) => ON + ' ' + sel + SCOPE + ',' + PV + ' ' + sel;
+    // a popup's pinned head, or one of its pseudo-elements (which must come after the scope)
+    const HEAD = ':is(.tfMore:not(.wide),.tfMoreSideInner)>.tfMoreHead';
+    const popHead = (pe) => ON + ' ' + HEAD + SCOPE + pe + ',' + PV + ' ' + HEAD + pe;
     style.textContent =
       ON + '{--card:' + rgba(card, a) + ';--group-bg:' + rgba(card, a) + ';--line:' + rgba(line, lineA) + ';--lineb:' + rgba(line, lineA) + ';' +
         (s.bg !== 'theme' ? '--bg:' + rgbHex(ground) + ';--page:' + rgbHex(ground) + ';--text:' + pageText + ';--muted:' + pageMuted + ';--tile:' + pageTile + ';color:var(--text);' : '') + '}' +
@@ -82,6 +85,14 @@ export function mountLook(root, { toast }) {
       ON + ' :is(' + ON_PAGE + '){--text:' + pageText + ';--muted:' + pageMuted + (s.bg !== 'theme' ? ';--tile:' + pageTile : '') + ';color:var(--text)}' +
       // frosted while there's any card at all; at 0% it's clear
       (a < 1 && a > 0 ? both(':is(' + SURFACES + ')') + '{-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}' : '') +
+      // a see-through popup's pinned head paints no colour (a second coat of the card's see-through colour showed as bands
+      // over the popup, Matt, 24 Nov): it and the cover above it frost what scrolls under them instead
+      // (only once something has scrolled under them: a frost over the bare popup shows as a band too)
+      // (one frosted layer behind the head, from 80 above it to its foot and out to the popup's sides, inside its 20 padding so it never scrolls sideways)
+      (a < 1 ? popHead('') + '{background:transparent}' +
+        popHead('::before') + '{z-index:-1;bottom:0;height:calc(100% + 80px);left:-20px;right:-20px;background:transparent;box-shadow:none;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);animation:hcHeadFrost linear both;animation-timeline:scroll(nearest block);animation-range:0 24px}' +
+        popHead('::after') + '{display:none}' +
+        '@keyframes hcHeadFrost{from{opacity:0}to{opacity:1}}' : '') +
       // the settings page: the theme's card, line and text; the preview: the look again
       '#app.hcDemo.hcLook #settingsView{--card:var(--color-bg-card);--group-bg:var(--color-bg-card);--line:var(--color-line);--lineb:var(--color-line)}' +
       '#app.hcDemo.hcLook #settingsView :is(.toggleList,.integrationList,.helpSteps){--text:var(--color-text-primary);--muted:var(--color-text-muted);--tile:var(--color-bg-tile);color:var(--text)}' +
